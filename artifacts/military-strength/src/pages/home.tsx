@@ -42,7 +42,7 @@ const DEFAULT_WEIGHTS: CategoryWeights = {
 };
 
 export default function Home() {
-  const [selectedCountries, setSelectedCountries] = useState<string[]>(["USA", "CHN"]);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>(["US", "CN"]);
   const [weights, setWeights] = useState<CategoryWeights>(DEFAULT_WEIGHTS);
   const [scenario, setScenario] = useState<"full" | "air" | "naval" | "ground">("full");
   const [regionFilter, setRegionFilter] = useState<string>("");
@@ -95,25 +95,16 @@ export default function Home() {
     <Layout>
       <div className="flex flex-col gap-6 h-full pb-10">
         
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-1 font-mono uppercase text-foreground">
-              Strategic Assessment
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              Head-to-head comparison of national military capabilities
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Tabs value={scenario} onValueChange={(v: any) => setScenario(v)} className="w-[400px]">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="full">Full Spectrum</TabsTrigger>
-                <TabsTrigger value="air">Air Superiority</TabsTrigger>
-                <TabsTrigger value="naval">Naval Dominance</TabsTrigger>
-                <TabsTrigger value="ground">Ground War</TabsTrigger>
-              </TabsList>
-            </Tabs>
+        <header className="flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight mb-1 font-mono uppercase text-foreground">
+                Strategic Assessment
+              </h1>
+              <p className="text-muted-foreground text-sm">
+                Head-to-head comparison of national military capabilities
+              </p>
+            </div>
 
             <Popover>
               <PopoverTrigger asChild>
@@ -155,6 +146,15 @@ export default function Home() {
               </PopoverContent>
             </Popover>
           </div>
+
+          <Tabs value={scenario} onValueChange={(v: any) => setScenario(v)}>
+            <TabsList className="flex w-full h-auto flex-wrap gap-1 p-1">
+              <TabsTrigger value="full" className="flex-1 min-w-[120px]">Full Spectrum</TabsTrigger>
+              <TabsTrigger value="air" className="flex-1 min-w-[120px]">Air Superiority</TabsTrigger>
+              <TabsTrigger value="naval" className="flex-1 min-w-[120px]">Naval Dominance</TabsTrigger>
+              <TabsTrigger value="ground" className="flex-1 min-w-[120px]">Ground War</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </header>
 
         {/* Selectors */}
@@ -165,7 +165,7 @@ export default function Home() {
               <SelectTrigger className="h-14 text-lg font-medium bg-background/50">
                 <SelectValue placeholder="Select Country..." />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-72 overflow-y-auto">
                 {countries.map(c => (
                   <SelectItem key={c.code} value={c.code}>
                     <span className="flex items-center">
@@ -190,7 +190,7 @@ export default function Home() {
               <SelectTrigger className="h-14 text-lg font-medium bg-background/50">
                 <SelectValue placeholder="Select Country..." />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-72 overflow-y-auto">
                 {countries.map(c => (
                   <SelectItem key={c.code} value={c.code}>
                     <span className="flex items-center">
