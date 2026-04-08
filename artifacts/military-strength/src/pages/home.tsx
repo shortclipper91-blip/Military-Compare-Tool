@@ -332,7 +332,7 @@ export default function Home() {
                 className="w-full border-dashed font-mono uppercase text-xs tracking-wider gap-2 h-10"
               >
                 {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                {showDetails ? "Hide" : "Show"} Detailed Intel — Equipment &amp; Forces Breakdown
+                {showDetails ? "Hide" : "Show"} Detailed Breakdown
               </Button>
 
               {showDetails && (
