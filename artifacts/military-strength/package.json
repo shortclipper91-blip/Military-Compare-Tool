@@ -73,5 +73,10 @@
     "vite": "catalog:",
     "wouter": "^3.3.5",
     "zod": "catalog:"
+  },
+  "dependencies": {
+    "d3-interpolate": "^3.0.1",
+    "d3-scale": "^4.0.2",
+    "react-simple-maps": "^3.0.0"
   }
 }

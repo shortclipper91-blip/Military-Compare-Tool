@@ -6,7 +6,7 @@ import { ThemeProvider } from "next-themes";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import CoalitionBuilder from "@/pages/coalition";
-import Timeline from "@/pages/timeline";
+import StrengthMap from "@/pages/map";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,7 +22,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/coalition" component={CoalitionBuilder} />
-      <Route path="/timeline" component={Timeline} />
+      <Route path="/map" component={StrengthMap} />
       <Route component={NotFound} />
     </Switch>
   );

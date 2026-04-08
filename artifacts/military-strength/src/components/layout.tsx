@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Crosshair, Users, LineChart, Shield, ShieldAlert } from "lucide-react";
+import { Crosshair, Users, Map, Shield, ShieldAlert } from "lucide-react";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -7,32 +7,32 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: "/", label: "Head-to-Head", icon: Shield },
     { href: "/coalition", label: "Coalition Builder", icon: Users },
-    { href: "/timeline", label: "Historical Timeline", icon: LineChart },
+    { href: "/map", label: "Strength Map", icon: Map },
   ];
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">
       {/* Sidebar */}
-      <div className="w-64 border-r border-sidebar-border bg-sidebar shrink-0 flex flex-col hidden md:flex">
+      <div className="w-64 border-r border-sidebar-border bg-sidebar shrink-0 flex-col hidden md:flex">
         <div className="h-16 flex items-center px-6 border-b border-sidebar-border shrink-0">
           <Crosshair className="w-6 h-6 text-primary mr-3" />
           <h1 className="font-bold text-sidebar-foreground tracking-tight uppercase text-sm">
             STRATCOM<span className="text-primary">.NET</span>
           </h1>
         </div>
-        
+
         <div className="p-4 flex-1 overflow-y-auto">
           <div className="space-y-1">
             <div className="text-xs font-mono text-sidebar-foreground/50 mb-4 px-2 uppercase tracking-wider">
               Analysis Modules
             </div>
             {navItems.map((item) => (
-              <Link 
-                key={item.href} 
+              <Link
+                key={item.href}
                 href={item.href}
                 className={`flex items-center px-3 py-2.5 rounded-md transition-colors ${
-                  location === item.href 
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" 
+                  location === item.href
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                     : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
                 }`}
               >
@@ -63,11 +63,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        {/* Dynamic Background subtle noise */}
+        {/* Subtle noise overlay */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.03] z-0" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\\"0 0 200 200\\" xmlns=\\"http://www.w3.org/2000/svg\\"%3E%3Cfilter id=\\"noiseFilter\\"%3E%3CfeTurbulence type=\\"fractalNoise\\" baseFrequency=\\"0.65\\" numOctaves=\\"3\\" stitchTiles=\\"stitch\\"/%3E%3C/filter%3E%3Crect width=\\"100%25\\" height=\\"100%25\\" filter=\\"url(%23noiseFilter)\\"/%3E%3C/svg%3E")' }}></div>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 z-10">
-          <div className="mx-auto max-w-7xl h-full">
+          <div className="mx-auto max-w-7xl">
             {children}
           </div>
         </main>
