@@ -3,13 +3,17 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Military Strength Comparator API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: countries
+    description: Country military data operations
+  - name: comparison
+    description: Military comparison operations
 paths:
   /healthz:
     get:
@@ -24,6 +28,171 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /countries:
+    get:
+      operationId: listCountries
+      tags: [countries]
+      summary: List all countries
+      description: Returns all countries with their military data, optionally filtered
+      parameters:
+        - name: continent
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: alliance
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: region
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of countries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Country"
+
+  /countries/{code}:
+    get:
+      operationId: getCountry
+      tags: [countries]
+      summary: Get a country by code
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Country data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Country"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /comparison:
+    post:
+      operationId: compareCountries
+      tags: [comparison]
+      summary: Compare multiple countries
+      description: Returns a comparison result with scores and advantages for selected countries
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComparisonRequest"
+      responses:
+        "200":
+          description: Comparison result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComparisonResult"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /comparison/coalitions:
+    post:
+      operationId: compareCoalitions
+      tags: [comparison]
+      summary: Compare two coalitions
+      description: Combines multiple countries into teams and compares
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CoalitionRequest"
+      responses:
+        "200":
+          description: Coalition comparison result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CoalitionResult"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /metadata/alliances:
+    get:
+      operationId: listAlliances
+      tags: [countries]
+      summary: List all military alliances
+      responses:
+        "200":
+          description: List of alliances
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /metadata/regions:
+    get:
+      operationId: listRegions
+      tags: [countries]
+      summary: List all regions and continents
+      responses:
+        "200":
+          description: Regions metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegionsMetadata"
+
+  /countries/{code}/timeline:
+    get:
+      operationId: getCountryTimeline
+      tags: [countries]
+      summary: Get historical military spending timeline for a country
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Timeline data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TimelineEntry"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +203,303 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    MilitaryMetrics:
+      type: object
+      properties:
+        activePersonnel:
+          type: ["integer", "null"]
+        reservePersonnel:
+          type: ["integer", "null"]
+        paramilitary:
+          type: ["integer", "null"]
+        defenseBudgetUsd:
+          type: ["number", "null"]
+        gdpUsd:
+          type: ["number", "null"]
+        population:
+          type: ["integer", "null"]
+        landAreaKm2:
+          type: ["number", "null"]
+        aircraft:
+          type: ["integer", "null"]
+        fighterJets:
+          type: ["integer", "null"]
+        attackHelicopters:
+          type: ["integer", "null"]
+        transportHelicopters:
+          type: ["integer", "null"]
+        tanks:
+          type: ["integer", "null"]
+        armoredVehicles:
+          type: ["integer", "null"]
+        selfPropelledArtillery:
+          type: ["integer", "null"]
+        rocketProjectors:
+          type: ["integer", "null"]
+        navalVessels:
+          type: ["integer", "null"]
+        submarines:
+          type: ["integer", "null"]
+        destroyers:
+          type: ["integer", "null"]
+        frigates:
+          type: ["integer", "null"]
+        aircraftCarriers:
+          type: ["integer", "null"]
+        nuclearWarheads:
+          type: ["integer", "null"]
+      required: []
+
+    DataSource:
+      type: object
+      properties:
+        metric:
+          type: string
+        source:
+          type: string
+        confidence:
+          type: string
+          enum: [high, medium, low]
+        lastUpdated:
+          type: string
+      required:
+        - metric
+        - source
+        - confidence
+        - lastUpdated
+
+    Country:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        flagEmoji:
+          type: string
+        continent:
+          type: string
+        region:
+          type: string
+        alliances:
+          type: array
+          items:
+            type: string
+        metrics:
+          $ref: "#/components/schemas/MilitaryMetrics"
+        dataSources:
+          type: array
+          items:
+            $ref: "#/components/schemas/DataSource"
+      required:
+        - code
+        - name
+        - flagEmoji
+        - continent
+        - region
+        - alliances
+        - metrics
+        - dataSources
+
+    CategoryWeights:
+      type: object
+      properties:
+        manpower:
+          type: number
+        airPower:
+          type: number
+        groundForces:
+          type: number
+        navalForces:
+          type: number
+        economy:
+          type: number
+        logistics:
+          type: number
+      required:
+        - manpower
+        - airPower
+        - groundForces
+        - navalForces
+        - economy
+        - logistics
+
+    ComparisonRequest:
+      type: object
+      properties:
+        countryCodes:
+          type: array
+          items:
+            type: string
+          minItems: 2
+        weights:
+          $ref: "#/components/schemas/CategoryWeights"
+        scenario:
+          type: string
+          enum: [full, air, naval, ground]
+      required:
+        - countryCodes
+        - weights
+        - scenario
+
+    CategoryScore:
+      type: object
+      properties:
+        category:
+          type: string
+        scores:
+          type: object
+          additionalProperties:
+            type: number
+        advantage:
+          type: string
+        advantageCountryCode:
+          type: string
+      required:
+        - category
+        - scores
+        - advantage
+        - advantageCountryCode
+
+    CountryScore:
+      type: object
+      properties:
+        countryCode:
+          type: string
+        totalScore:
+          type: number
+        categoryScores:
+          type: object
+          additionalProperties:
+            type: number
+      required:
+        - countryCode
+        - totalScore
+        - categoryScores
+
+    ComparisonResult:
+      type: object
+      properties:
+        countries:
+          type: array
+          items:
+            $ref: "#/components/schemas/Country"
+        scores:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountryScore"
+        categoryBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryScore"
+        overallWinner:
+          type: string
+      required:
+        - countries
+        - scores
+        - categoryBreakdown
+        - overallWinner
+
+    CoalitionRequest:
+      type: object
+      properties:
+        teamA:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        teamB:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        weights:
+          $ref: "#/components/schemas/CategoryWeights"
+        scenario:
+          type: string
+          enum: [full, air, naval, ground]
+      required:
+        - teamA
+        - teamB
+        - weights
+        - scenario
+
+    CoalitionMetrics:
+      type: object
+      properties:
+        teamName:
+          type: string
+        countries:
+          type: array
+          items:
+            $ref: "#/components/schemas/Country"
+        combinedMetrics:
+          $ref: "#/components/schemas/MilitaryMetrics"
+        totalScore:
+          type: number
+        categoryScores:
+          type: object
+          additionalProperties:
+            type: number
+      required:
+        - teamName
+        - countries
+        - combinedMetrics
+        - totalScore
+        - categoryScores
+
+    CoalitionResult:
+      type: object
+      properties:
+        teamA:
+          $ref: "#/components/schemas/CoalitionMetrics"
+        teamB:
+          $ref: "#/components/schemas/CoalitionMetrics"
+        categoryBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryScore"
+        winner:
+          type: string
+      required:
+        - teamA
+        - teamB
+        - categoryBreakdown
+        - winner
+
+    RegionsMetadata:
+      type: object
+      properties:
+        continents:
+          type: array
+          items:
+            type: string
+        regions:
+          type: array
+          items:
+            type: string
+      required:
+        - continents
+        - regions
+
+    TimelineEntry:
+      type: object
+      properties:
+        year:
+          type: integer
+        defenseBudgetUsd:
+          type: ["number", "null"]
+        activePersonnel:
+          type: ["integer", "null"]
+        gdpUsd:
+          type: ["number", "null"]
+      required:
+        - year

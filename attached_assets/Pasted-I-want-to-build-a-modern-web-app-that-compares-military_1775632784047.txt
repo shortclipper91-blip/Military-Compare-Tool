@@ -1,0 +1,186 @@
+I want to build a modern web app that compares military strength between countries in a clear, visual, and interactive way.
+
+The app should function similarly to a country comparison tool, but with a cleaner UI, customizable scoring, and better visualization.
+
+Core concept
+
+Users can select two or more countries and compare their military capabilities side-by-side using structured data such as manpower, equipment, budget, geography, and economy.
+
+The interface must be simple, responsive, and visually intuitive.
+
+⸻
+
+Main features
+
+1. Country comparison tool
+
+Allow users to:
+
+Select Country A
+Select Country B
+(Optional: add multiple countries)
+
+Then show comparison table:
+
+Example metrics:
+
+Active military personnel
+Reserve personnel
+Defense budget
+GDP
+Population
+Land area
+Number of aircraft
+Fighter jets
+Helicopters
+Tanks
+Armored vehicles
+Naval vessels
+Submarines
+
+Display results in a structured comparison layout.
+
+⸻
+
+2. Military strength index (custom scoring system)
+
+Create a calculated score called:
+
+Military Strength Index
+
+This score should be based on weighted categories:
+
+Manpower
+Air power
+Ground forces
+Naval forces
+Economy
+Logistics / geography
+
+Allow users to adjust category weights using sliders.
+
+Example:
+
+Air power: 40%
+Manpower: 20%
+Economy: 15%
+
+The index updates dynamically.
+
+⸻
+
+3. Visualization features
+
+Include:
+
+Radar chart comparison
+Bar charts for each category
+Strength advantage indicators
+
+Example:
+
+“Air superiority: Sweden”
+“Ground forces advantage: Finland”
+
+Charts must update live when countries change.
+
+⸻
+
+4. Region filters
+
+Allow filtering countries by:
+
+Continent
+Alliance membership (example: NATO)
+Region (example: Scandinavia)
+
+⸻
+
+5. Coalition comparison mode
+
+Users can combine countries into teams:
+
+Example:
+
+Norway + Sweden vs Russia
+
+Then show combined totals.
+
+⸻
+
+6. Scenario comparison mode
+
+Allow users to switch comparison types:
+
+Full military comparison
+Air-only comparison
+Naval-only comparison
+Ground-only comparison
+
+Only relevant metrics should be displayed depending on scenario.
+
+⸻
+
+7. Data transparency section
+
+Each metric should display:
+
+Source
+Confidence level
+Last updated date
+
+Example:
+
+Confidence: Medium
+Updated: 2024
+
+⸻
+
+8. Technology requirements
+
+Build as:
+
+Modern responsive web app
+Fast loading
+Mobile-friendly
+
+Recommended stack:
+
+Frontend: Next.js
+Styling: TailwindCSS
+Charts: Recharts or Chart.js
+Database: PostgreSQL or Supabase
+
+Use structured JSON datasets for country statistics.
+
+⸻
+
+9. UI design requirements
+
+Design should be:
+
+Minimal
+Modern
+Dashboard-style
+Dark mode supported
+Clean typography
+Interactive charts
+
+Include:
+
+Country selector dropdown with flags
+Comparison tables
+Interactive charts
+Score summary panel
+
+⸻
+
+10. Bonus features (if possible)
+
+Timeline view showing military growth over time
+
+Example:
+
+Norway military spending since 1990
+
+Interactive map visualization

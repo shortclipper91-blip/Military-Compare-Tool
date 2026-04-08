@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Military Strength Comparator"
+version = "1.0.0"
+id = "artifacts/military-strength"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24473
+
+[services.development]
+run = "pnpm --filter @workspace/military-strength run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/military-strength", "run", "build" ]
+publicDir = "artifacts/military-strength/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24473"
+BASE_PATH = "/"
