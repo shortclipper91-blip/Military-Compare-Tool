@@ -21,20 +21,23 @@ const ISO2_TO_NUMERIC: Record<string, string> = {
 };
 
 function computeScore(c: {
-  activePersonnel: number;
-  defenseBudgetUsd: number;
-  aircraft: number;
-  tanks: number;
-  navalVessels: number;
-  nuclearWarheads: number;
+  metrics: {
+    activePersonnel?: number | null;
+    defenseBudgetUsd?: number | null;
+    aircraft?: number | null;
+    tanks?: number | null;
+    navalVessels?: number | null;
+    nuclearWarheads?: number | null;
+  };
 }): number {
+  const m = c.metrics;
   return (
-    (c.activePersonnel / 2035000) * 0.20 +
-    (c.defenseBudgetUsd / 886e9) * 0.35 +
-    (c.aircraft / 13300) * 0.15 +
-    (c.tanks / 12420) * 0.10 +
-    (c.navalVessels / 730) * 0.10 +
-    (Math.min(c.nuclearWarheads, 1000) / 1000) * 0.10
+    ((m.activePersonnel ?? 0) / 2035000) * 0.20 +
+    ((m.defenseBudgetUsd ?? 0) / 886e9) * 0.35 +
+    ((m.aircraft ?? 0) / 13300) * 0.15 +
+    ((m.tanks ?? 0) / 12420) * 0.10 +
+    ((m.navalVessels ?? 0) / 730) * 0.10 +
+    (Math.min(m.nuclearWarheads ?? 0, 1000) / 1000) * 0.10
   );
 }
 
@@ -227,12 +230,12 @@ export default function StrengthMap() {
                 </div>
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/50">
                   {[
-                    { label: "Personnel", value: (selectedCountry.activePersonnel / 1000).toFixed(0) + "K" },
-                    { label: "Defense Budget", value: "$" + (selectedCountry.defenseBudgetUsd / 1e9).toFixed(0) + "B" },
-                    { label: "Aircraft", value: selectedCountry.aircraft.toLocaleString() },
-                    { label: "Tanks", value: selectedCountry.tanks.toLocaleString() },
-                    { label: "Naval Vessels", value: selectedCountry.navalVessels.toLocaleString() },
-                    { label: "Nuclear", value: selectedCountry.nuclearWarheads > 0 ? selectedCountry.nuclearWarheads.toLocaleString() : "None" },
+                    { label: "Personnel", value: ((selectedCountry.metrics.activePersonnel ?? 0) / 1000).toFixed(0) + "K" },
+                    { label: "Defense Budget", value: "$" + ((selectedCountry.metrics.defenseBudgetUsd ?? 0) / 1e9).toFixed(0) + "B" },
+                    { label: "Aircraft", value: (selectedCountry.metrics.aircraft ?? 0).toLocaleString() },
+                    { label: "Tanks", value: (selectedCountry.metrics.tanks ?? 0).toLocaleString() },
+                    { label: "Naval Vessels", value: (selectedCountry.metrics.navalVessels ?? 0).toLocaleString() },
+                    { label: "Nuclear", value: (selectedCountry.metrics.nuclearWarheads ?? 0) > 0 ? (selectedCountry.metrics.nuclearWarheads ?? 0).toLocaleString() : "None" },
                   ].map(({ label, value }) => (
                     <div key={label}>
                       <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">{label}</div>
