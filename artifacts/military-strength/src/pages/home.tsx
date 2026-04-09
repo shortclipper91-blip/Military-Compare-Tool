@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Layout } from "@/components/layout";
+import { FlagIcon } from "@/components/flag-icon";
 import { 
   useListCountries, 
   useCompareCountries,
@@ -59,7 +60,7 @@ function CountrySelect({
           >
             {selected ? (
               <div className="flex items-center gap-3 w-full min-w-0">
-                <span className="text-2xl shrink-0 leading-none">{selected.flagEmoji}</span>
+                <FlagIcon code={selected.code} size={20} className="w-8 h-6" />
                 <span className="font-semibold truncate">{selected.name}</span>
                 <span className="ml-auto text-xs text-muted-foreground font-mono shrink-0">({selected.code})</span>
               </div>
@@ -81,7 +82,7 @@ function CountrySelect({
                     onSelect={() => { onChange(c.code); setOpen(false); }}
                     className="flex items-center gap-3 cursor-pointer"
                   >
-                    <span className="text-xl shrink-0">{c.flagEmoji}</span>
+                    <FlagIcon code={c.code} size={20} />
                     <span className="flex-1">{c.name}</span>
                     <span className="text-xs text-muted-foreground font-mono">{c.code}</span>
                   </CommandItem>
@@ -291,7 +292,7 @@ export default function Home() {
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="text-5xl drop-shadow-md leading-none">{country.flagEmoji}</div>
+                          <FlagIcon code={country.code} size={40} className="rounded shadow-md" />
                           <div>
                             <h2 className="text-2xl font-bold tracking-tight">{country.name}</h2>
                             <p className="text-sm font-mono text-muted-foreground tracking-wider uppercase">{country.region}</p>
@@ -341,12 +342,12 @@ export default function Home() {
                     {/* Header with country names */}
                     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-6 pb-4 border-b border-border/50">
                       <div className="flex items-center gap-2">
-                        <span className="text-2xl">{countryA.flagEmoji}</span>
+                        <FlagIcon code={countryA.code} size={20} className="w-8 h-6" />
                         <span className="font-bold text-sm font-mono uppercase tracking-wide">{countryA.name}</span>
                       </div>
                       <div className="w-28 text-center text-xs font-mono text-muted-foreground/40 uppercase">vs</div>
                       <div className="flex items-center gap-2">
-                        <span className="text-2xl">{countryB.flagEmoji}</span>
+                        <FlagIcon code={countryB.code} size={20} className="w-8 h-6" />
                         <span className="font-bold text-sm font-mono uppercase tracking-wide">{countryB.name}</span>
                       </div>
                     </div>
@@ -456,7 +457,7 @@ export default function Home() {
                           <div className="flex items-center justify-between">
                             <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{cat.category}</span>
                             <span className="font-bold text-sm flex items-center gap-2">
-                              {winner.flagEmoji} {winner.name}
+                              <FlagIcon code={winner.code} size={20} className="inline-block align-middle" /> {winner.name}
                               <span className="text-xs text-muted-foreground font-normal">advantage</span>
                             </span>
                           </div>
@@ -465,8 +466,8 @@ export default function Home() {
                             <div className="rounded-full transition-all" style={{ width: `${bPercent}%`, background: "hsl(var(--chart-4))" }} />
                           </div>
                           <div className="flex justify-between text-xs font-mono text-muted-foreground">
-                            <span>{countryA.flagEmoji} {aPercent}%</span>
-                            <span>{bPercent}% {countryB.flagEmoji}</span>
+                            <span className="flex items-center gap-1"><FlagIcon code={countryA.code} size={20} /> {aPercent}%</span>
+                            <span className="flex items-center gap-1">{bPercent}% <FlagIcon code={countryB.code} size={20} /></span>
                           </div>
                         </div>
                       );

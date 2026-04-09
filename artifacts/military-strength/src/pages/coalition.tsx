@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Layout } from "@/components/layout";
+import { FlagIcon } from "@/components/flag-icon";
 import { useListCountries, useCompareCoalitions } from "@workspace/api-client-react";
 import type { CategoryWeights, Country } from "@workspace/api-client-react/src/generated/api.schemas";
 import { formatCompact } from "@/lib/format";
@@ -67,7 +68,7 @@ export default function CoalitionBuilder() {
                         key={c.code}
                         onSelect={() => setTeam([...team, c.code])}
                       >
-                        <span className="mr-2">{c.flagEmoji}</span>
+                        <FlagIcon code={c.code} size={20} className="mr-2" />
                         {c.name}
                       </CommandItem>
                     ))}
@@ -86,7 +87,7 @@ export default function CoalitionBuilder() {
             return (
               <div key={code} className="flex items-center justify-between bg-background p-2 px-3 rounded-md border border-border group hover:border-primary/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <span className="text-xl">{country.flagEmoji}</span>
+                  <FlagIcon code={country.code} size={20} />
                   <span className="font-medium text-sm">{country.name}</span>
                 </div>
                 <Button 

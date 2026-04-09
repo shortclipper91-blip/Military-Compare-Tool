@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
 import { Layout } from "@/components/layout";
+import { FlagIcon } from "@/components/flag-icon";
 import { useListCountries } from "@workspace/api-client-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -66,7 +67,7 @@ function getTier(score: number) {
 
 export default function StrengthMap() {
   const { data: countries = [], isLoading } = useListCountries();
-  const [tooltip, setTooltip] = useState<{ name: string; flag: string; score: number; rank: number } | null>(null);
+  const [tooltip, setTooltip] = useState<{ name: string; code: string; score: number; rank: number } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [center, setCenter] = useState<[number, number]>([10, 10]);
   const [selected, setSelected] = useState<string | null>(null);
@@ -81,10 +82,10 @@ export default function StrengthMap() {
   }, [countries]);
 
   const scoreMap = useMemo(() => {
-    const m: Record<string, { score: number; rank: number; flag: string; name: string }> = {};
+    const m: Record<string, { score: number; rank: number; code: string; name: string }> = {};
     for (const c of scored) {
       const num = ISO2_TO_NUMERIC[c.code];
-      if (num) m[num] = { score: c.score, rank: c.rank, flag: c.flagEmoji, name: c.name };
+      if (num) m[num] = { score: c.score, rank: c.rank, code: c.code, name: c.name };
     }
     return m;
   }, [scored]);
@@ -149,7 +150,7 @@ export default function StrengthMap() {
                           key={geo.rsmKey}
                           geography={geo}
                           onMouseEnter={() => {
-                            if (info) setTooltip({ name: info.name, flag: info.flag, score: info.score, rank: info.rank });
+                            if (info) setTooltip({ name: info.name, code: info.code, score: info.score, rank: info.rank });
                           }}
                           onMouseLeave={() => {
                             if (!selected) setTooltip(null);
@@ -159,7 +160,7 @@ export default function StrengthMap() {
                               const code = Object.entries(ISO2_TO_NUMERIC).find(([, v]) => v === id)?.[0];
                               if (code) {
                                 setSelected((prev) => prev === code ? null : code);
-                                setTooltip({ name: info.name, flag: info.flag, score: info.score, rank: info.rank });
+                                setTooltip({ name: info.name, code: info.code, score: info.score, rank: info.rank });
                               }
                             }
                           }}
@@ -205,7 +206,7 @@ export default function StrengthMap() {
 
             {tooltip && !selected && (
               <div className="absolute top-3 right-3 bg-card/95 border border-border rounded-md px-3 py-2 text-sm font-mono shadow-xl pointer-events-none">
-                <div className="font-bold text-foreground">{tooltip.flag} {tooltip.name}</div>
+                <div className="font-bold text-foreground flex items-center gap-2"><FlagIcon code={tooltip.code} size={20} /> {tooltip.name}</div>
                 <div className="text-muted-foreground text-xs mt-0.5">
                   Rank <span className="text-primary">#{tooltip.rank}</span> · Score{" "}
                   <span className="text-primary">{(tooltip.score * 100).toFixed(1)}</span>
@@ -220,7 +221,7 @@ export default function StrengthMap() {
               <Card className="border-primary/40 bg-card/60 p-4 space-y-2">
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="text-xl">{selectedCountry.flagEmoji}</div>
+                    <FlagIcon code={selectedCountry.code} size={40} className="rounded" />
                     <div className="font-bold font-mono text-foreground mt-1">{selectedCountry.name}</div>
                     <Badge variant="outline" className="text-primary border-primary/50 text-xs mt-1">
                       #{selectedCountry.rank} Globally
@@ -276,7 +277,7 @@ export default function StrengthMap() {
                     }`}
                   >
                     <span className="text-xs font-mono text-muted-foreground w-5 shrink-0">#{c.rank}</span>
-                    <span className="text-base shrink-0">{c.flagEmoji}</span>
+                    <FlagIcon code={c.code} size={20} />
                     <span className="text-xs font-mono text-foreground flex-1 truncate">{c.name}</span>
                     <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden shrink-0">
                       <div
