@@ -3,12 +3,12 @@
 import React, { useState, useMemo } from "react";
 import { Layout } from "@/components/layout";
 import { FlagIcon } from "@/components/flag-icon";
+import { CountrySelector } from "@/components/CountrySelector";
 import { COUNTRIES_DATA, Country } from "@/lib/countryData";
-import { calculateScores, DEFAULT_WEIGHTS } from "@/lib/scoring";
-import { formatCompact } from "@/lib/format";
+import { calculateScores } from "@/lib/scoring";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, X, Swords } from "lucide-react";
+import { X, Swords, Plus } from "lucide-react";
 
 export default function Coalition() {
   const [teamA, setTeamA] = useState<string[]>(["US", "GB"]);
@@ -47,22 +47,29 @@ export default function Coalition() {
           {team.map((code: string) => {
             const c = COUNTRIES_DATA.find(x => x.code === code)!;
             return (
-              <div key={code} className="flex items-center gap-2 bg-background border border-border px-2 py-1 rounded text-xs font-mono">
+              <div key={code} className="flex items-center gap-2 bg-background border border-border px-2 py-1 rounded text-xs font-mono group">
                 <FlagIcon code={code} size={16} />
                 {c.name}
-                <button onClick={() => setTeam(team.filter((t: string) => t !== code))} className="hover:text-destructive">
+                <button onClick={() => setTeam(team.filter((t: string) => t !== code))} className="hover:text-destructive transition-colors">
                   <X className="w-3 h-3" />
                 </button>
               </div>
             );
           })}
+          {team.length === 0 && (
+            <div className="w-full h-24 flex items-center justify-center border border-dashed border-border rounded text-muted-foreground text-xs uppercase tracking-widest">
+              No nations assigned
+            </div>
+          )}
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          {COUNTRIES_DATA.filter(c => !teamA.includes(c.code) && !teamB.includes(c.code)).map(c => (
-            <Button key={c.code} variant="outline" size="sm" className="justify-start text-[10px] h-7" onClick={() => setTeam([...team, c.code])}>
-              <Plus className="w-3 h-3 mr-1" /> {c.name}
-            </Button>
-          ))}
+        
+        <div className="pt-2">
+          <CountrySelector 
+            value="" 
+            onChange={(val) => !team.includes(val) && setTeam([...team, val])}
+            placeholder="Add nation to coalition..."
+            exclude={[...teamA, ...teamB]}
+          />
         </div>
       </CardContent>
     </Card>

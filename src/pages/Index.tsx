@@ -3,11 +3,12 @@
 import React, { useState, useMemo } from "react";
 import { Layout } from "@/components/layout";
 import { FlagIcon } from "@/components/flag-icon";
+import { CountrySelector } from "@/components/CountrySelector";
 import { COUNTRIES_DATA } from "@/lib/countryData";
 import { calculateScores } from "@/lib/scoring";
 import { formatCompact, formatCurrency } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { Users, Plane, Target, Anchor, DollarSign, Zap, ArrowRightLeft } from "lucide-react";
 
@@ -58,29 +59,26 @@ export default function Index() {
             <h1 className="text-4xl font-black tracking-tighter uppercase italic">Strategic Assessment</h1>
             <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest">Head-to-Head Force Comparison Matrix</p>
           </div>
-          <div className="flex gap-2">
-            <select 
-              className="bg-card border border-border rounded px-3 py-1 text-sm font-mono"
-              value={selected[0]}
-              onChange={(e) => setSelected([e.target.value, selected[1]])}
-            >
-              {COUNTRIES_DATA.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
-            </select>
-            <Button variant="ghost" size="icon" onClick={() => setSelected([selected[1], selected[0]])}>
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="flex-1 md:w-64">
+              <CountrySelector 
+                value={selected[0]} 
+                onChange={(val) => setSelected([val, selected[1]])} 
+              />
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setSelected([selected[1], selected[0]])} className="shrink-0">
               <ArrowRightLeft className="w-4 h-4" />
             </Button>
-            <select 
-              className="bg-card border border-border rounded px-3 py-1 text-sm font-mono"
-              value={selected[1]}
-              onChange={(e) => setSelected([selected[0], e.target.value])}
-            >
-              {COUNTRIES_DATA.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
-            </select>
+            <div className="flex-1 md:w-64">
+              <CountrySelector 
+                value={selected[1]} 
+                onChange={(val) => setSelected([selected[0], val])} 
+              />
+            </div>
           </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column: Detailed Stats */}
           <Card className="lg:col-span-2 border-border/50 bg-card/30 backdrop-blur-sm">
             <CardHeader className="border-b border-border/50">
               <div className="flex justify-between items-center">
@@ -141,7 +139,6 @@ export default function Index() {
             </CardContent>
           </Card>
 
-          {/* Right Column: Index & Radar */}
           <div className="space-y-6">
             <Card className="border-primary/20 bg-primary/5">
               <CardHeader>
@@ -187,5 +184,3 @@ export default function Index() {
     </Layout>
   );
 }
-
-import { Button } from "@/components/ui/button";
