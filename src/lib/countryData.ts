@@ -138,35 +138,35 @@ export const COUNTRIES_DATA: Country[] = [
     }
   },
   {
-    code: "EG", name: "Egypt", flagEmoji: "🇪🇬", region: "North Africa",
+    code: "NO", name: "Norway", flagEmoji: "🇳🇴", region: "Scandinavia",
     metrics: {
-      activePersonnel: 440000, reservePersonnel: 480000, defenseBudgetUsd: 4.6e9, gdpUsd: 0.475e12,
-      aircraft: 1069, fighterJets: 245, attackHelicopters: 92, tanks: 4664, armoredVehicles: 11000,
-      navalVessels: 245, submarines: 8, aircraftCarriers: 2, nuclearWarheads: 0, population: 109e6, landAreaKm2: 1002450
+      activePersonnel: 23250, reservePersonnel: 40000, defenseBudgetUsd: 8.2e9, gdpUsd: 0.579e12,
+      aircraft: 150, fighterJets: 57, attackHelicopters: 0, tanks: 36, armoredVehicles: 800,
+      navalVessels: 70, submarines: 6, aircraftCarriers: 0, nuclearWarheads: 0, population: 5.4e6, landAreaKm2: 385207
     }
   },
   {
-    code: "SA", name: "Saudi Arabia", flagEmoji: "🇸🇦", region: "Middle East",
+    code: "SE", name: "Sweden", flagEmoji: "🇸🇪", region: "Scandinavia",
     metrics: {
-      activePersonnel: 227000, reservePersonnel: 0, defenseBudgetUsd: 75e9, gdpUsd: 1.06e12,
-      aircraft: 897, fighterJets: 283, attackHelicopters: 34, tanks: 1273, armoredVehicles: 6200,
-      navalVessels: 55, submarines: 0, aircraftCarriers: 0, nuclearWarheads: 0, population: 35e6, landAreaKm2: 2149690
+      activePersonnel: 24400, reservePersonnel: 32000, defenseBudgetUsd: 7.9e9, gdpUsd: 0.585e12,
+      aircraft: 205, fighterJets: 96, attackHelicopters: 0, tanks: 121, armoredVehicles: 2600,
+      navalVessels: 65, submarines: 5, aircraftCarriers: 0, nuclearWarheads: 0, population: 10.4e6, landAreaKm2: 450295
     }
   },
   {
-    code: "AU", name: "Australia", flagEmoji: "🇦🇺", region: "Oceania",
+    code: "FI", name: "Finland", flagEmoji: "🇫🇮", region: "Scandinavia",
     metrics: {
-      activePersonnel: 59000, reservePersonnel: 28000, defenseBudgetUsd: 32.3e9, gdpUsd: 1.7e12,
-      aircraft: 452, fighterJets: 98, attackHelicopters: 22, tanks: 59, armoredVehicles: 3051,
-      navalVessels: 43, submarines: 6, aircraftCarriers: 0, nuclearWarheads: 0, population: 26e6, landAreaKm2: 7692024
+      activePersonnel: 24000, reservePersonnel: 870000, defenseBudgetUsd: 4.8e9, gdpUsd: 0.281e12,
+      aircraft: 160, fighterJets: 62, attackHelicopters: 0, tanks: 200, armoredVehicles: 3200,
+      navalVessels: 50, submarines: 0, aircraftCarriers: 0, nuclearWarheads: 0, population: 5.5e6, landAreaKm2: 338424
     }
   },
   {
-    code: "CA", name: "Canada", flagEmoji: "🇨🇦", region: "North America",
+    code: "DK", name: "Denmark", flagEmoji: "🇩🇰", region: "Scandinavia",
     metrics: {
-      activePersonnel: 68000, reservePersonnel: 27000, defenseBudgetUsd: 22.2e9, gdpUsd: 2.14e12,
-      aircraft: 376, fighterJets: 77, attackHelicopters: 0, tanks: 82, armoredVehicles: 1534,
-      navalVessels: 64, submarines: 4, aircraftCarriers: 0, nuclearWarheads: 0, population: 38e6, landAreaKm2: 9984670
+      activePersonnel: 17200, reservePersonnel: 67000, defenseBudgetUsd: 7.5e9, gdpUsd: 0.396e12,
+      aircraft: 120, fighterJets: 45, attackHelicopters: 0, tanks: 44, armoredVehicles: 700,
+      navalVessels: 57, submarines: 0, aircraftCarriers: 0, nuclearWarheads: 0, population: 5.9e6, landAreaKm2: 43094
     }
   },
   {

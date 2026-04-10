@@ -10,12 +10,12 @@ import { FlagIcon } from "@/components/flag-icon";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-// Comprehensive mapping for all countries in our dataset
+// Comprehensive mapping for all countries in our dataset to match world-atlas numeric IDs
 const ISO2_TO_NUMERIC: Record<string, string> = {
   US: "840", RU: "643", CN: "156", IN: "356", GB: "826", FR: "250",
   DE: "276", JP: "392", KR: "410", TR: "792", PK: "586", IL: "376",
-  BR: "076", IT: "380", EG: "818", SA: "682", AU: "036", CA: "124",
-  UA: "804", PL: "616", KP: "408"
+  BR: "076", IT: "380", UA: "804", PL: "616", KP: "408",
+  NO: "578", SE: "752", FI: "246", DK: "208"
 };
 
 export default function MapPage() {
@@ -23,10 +23,11 @@ export default function MapPage() {
   const [hovered, setHovered] = useState<any>(null);
 
   const getColor = (score: number) => {
-    if (score > 80) return "hsl(var(--primary))";
-    if (score > 50) return "hsl(var(--primary) / 0.6)";
-    if (score > 20) return "hsl(var(--primary) / 0.3)";
-    return "hsl(var(--muted) / 0.4)";
+    // Tactical amber/gold scale
+    if (score > 80) return "hsl(47.9 95.8% 53.1%)";
+    if (score > 50) return "hsl(47.9 95.8% 53.1% / 0.7)";
+    if (score > 20) return "hsl(47.9 95.8% 53.1% / 0.4)";
+    return "hsl(47.9 95.8% 53.1% / 0.15)";
   };
 
   return (
@@ -94,12 +95,16 @@ export default function MapPage() {
               <span className="text-[10px] font-mono uppercase">Tier 1 (80+)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-primary/60 rounded-sm" />
+              <div className="w-3 h-3 bg-primary/70 rounded-sm" />
               <span className="text-[10px] font-mono uppercase">Tier 2 (50-80)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-primary/30 rounded-sm" />
+              <div className="w-3 h-3 bg-primary/40 rounded-sm" />
               <span className="text-[10px] font-mono uppercase">Tier 3 (20-50)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-primary/15 rounded-sm" />
+              <span className="text-[10px] font-mono uppercase">Tier 4 (0-20)</span>
             </div>
           </div>
         </Card>
