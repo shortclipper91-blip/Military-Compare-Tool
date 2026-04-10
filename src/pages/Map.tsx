@@ -31,8 +31,7 @@ export default function MapPage() {
   [selectedCode]);
 
   const selectedScore = useMemo(() => 
-    scores.find(s => s.code === selectedCode), 
-  [selectedCode, scores]);
+    scores.find(s => s.code === selectedCode),   [selectedCode, scores]);
 
   const getColor = (score: number) => {
     // Tactical Multi-Color Tier System
@@ -100,8 +99,7 @@ export default function MapPage() {
                         const isSelected = selectedCode === countryCode;
                         
                         return (
-                          <Geography
-                            key={geo.rsmKey}
+                          <Geography                            key={geo.rsmKey}
                             geography={geo}
                             onMouseEnter={() => countryCode && setHoveredCode(countryCode)}
                             onMouseLeave={() => setHoveredCode(null)}
