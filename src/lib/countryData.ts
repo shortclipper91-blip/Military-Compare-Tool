@@ -1,207 +1,108 @@
-export const COUNTRIES_DATA = [
-  {
-    code: "US",
-    name: "United States",
-    flagEmoji: "🇺🇸",
-    continent: "North America",
-    region: "North America",
-    alliances: ["NATO", "AUKUS", "Five Eyes"],
-    activePersonnel: 1395350,
-    reservePersonnel: 845600,
-    paramilitary: 0,
-    defenseBudgetUsd: 886e9,
-    gdpUsd: 25.46e12,
-    population: 331000000,
-    landAreaKm2: 9833517,
-    aircraft: 13300,
-    fighterJets: 1956,
-    attackHelicopters: 983,
-    transportHelicopters: 1147,
-    tanks: 5500,
-    armoredVehicles: 39253,
-    selfPropelledArtillery: 3269,
-    rocketProjectors: 1366,
-    navalVessels: 484,
-    submarines: 68,
-    destroyers: 92,
-    frigates: 0,
-    aircraftCarriers: 11,
-    nuclearWarheads: 5550,
-    dataSources: [
-      { metric: "defenseBudgetUsd", source: "SIPRI 2023", confidence: "high", lastUpdated: "2024" },
-      { metric: "activePersonnel", source: "Global Firepower 2024", confidence: "high", lastUpdated: "2024" },
-      { metric: "nuclearWarheads", source: "FAS 2023", confidence: "medium", lastUpdated: "2023" },
-    ],
-  },
-  {
-    code: "RU",
-    name: "Russia",
-    flagEmoji: "🇷🇺",
-    continent: "Europe",
-    region: "Eastern Europe",
-    alliances: ["CSTO"],
-    activePersonnel: 1320000,
-    reservePersonnel: 2000000,
-    paramilitary: 250000,
-    defenseBudgetUsd: 109e9,
-    gdpUsd: 2.24e12,
-    population: 144000000,
-    landAreaKm2: 17098242,
-    aircraft: 4292,
-    fighterJets: 772,
-    attackHelicopters: 537,
-    transportHelicopters: 365,
-    tanks: 12420,
-    armoredVehicles: 27038,
-    selfPropelledArtillery: 5765,
-    rocketProjectors: 3740,
-    navalVessels: 598,
-    submarines: 59,
-    destroyers: 15,
-    frigates: 11,
-    aircraftCarriers: 1,
-    nuclearWarheads: 6255,
-    dataSources: [
-      { metric: "defenseBudgetUsd", source: "SIPRI 2023", confidence: "high", lastUpdated: "2024" },
-      { metric: "nuclearWarheads", source: "FAS 2023", confidence: "medium", lastUpdated: "2023" },
-    ],
-  },
-  {
-    code: "CN",
-    name: "China",
-    flagEmoji: "🇨🇳",
-    continent: "Asia",
-    region: "East Asia",
-    alliances: ["SCO"],
-    activePersonnel: 2035000,
-    reservePersonnel: 510000,
-    paramilitary: 660000,
-    defenseBudgetUsd: 224e9,
-    gdpUsd: 17.96e12,
-    population: 1412000000,
-    landAreaKm2: 9596960,
-    aircraft: 3285,
-    fighterJets: 1200,
-    attackHelicopters: 327,
-    transportHelicopters: 436,
-    tanks: 5000,
-    armoredVehicles: 35000,
-    selfPropelledArtillery: 2000,
-    rocketProjectors: 2650,
-    navalVessels: 730,
-    submarines: 60,
-    destroyers: 50,
-    frigates: 54,
-    aircraftCarriers: 3,
-    nuclearWarheads: 410,
-    dataSources: [
-      { metric: "defenseBudgetUsd", source: "SIPRI 2023", confidence: "high", lastUpdated: "2024" },
-      { metric: "activePersonnel", source: "IISS Military Balance 2024", confidence: "high", lastUpdated: "2024" },
-    ],
-  },
-  {
-    code: "IN",
-    name: "India",
-    flagEmoji: "🇮🇳",
-    continent: "Asia",
-    region: "South Asia",
-    alliances: ["SCO"],
-    activePersonnel: 1455550,
-    reservePersonnel: 1155000,
-    paramilitary: 2527000,
-    defenseBudgetUsd: 81.4e9,
-    gdpUsd: 3.39e12,
-    population: 1400000000,
-    landAreaKm2: 3287263,
-    aircraft: 2229,
-    fighterJets: 538,
-    attackHelicopters: 35,
-    transportHelicopters: 197,
-    tanks: 4614,
-    armoredVehicles: 10000,
-    selfPropelledArtillery: 140,
-    rocketProjectors: 1062,
-    navalVessels: 295,
-    submarines: 18,
-    destroyers: 11,
-    frigates: 14,
-    aircraftCarriers: 2,
-    nuclearWarheads: 164,
-    dataSources: [
-      { metric: "defenseBudgetUsd", source: "SIPRI 2023", confidence: "high", lastUpdated: "2024" },
-    ],
-  },
-  {
-    code: "GB",
-    name: "United Kingdom",
-    flagEmoji: "🇬🇧",
-    continent: "Europe",
-    region: "Western Europe",
-    alliances: ["NATO", "AUKUS", "Five Eyes"],
-    activePersonnel: 148500,
-    reservePersonnel: 78840,
-    paramilitary: 0,
-    defenseBudgetUsd: 68.5e9,
-    gdpUsd: 3.07e12,
-    population: 67000000,
-    landAreaKm2: 243610,
-    aircraft: 887,
-    fighterJets: 155,
-    attackHelicopters: 50,
-    transportHelicopters: 86,
-    tanks: 213,
-    armoredVehicles: 5015,
-    selfPropelledArtillery: 89,
-    rocketProjectors: 56,
-    navalVessels: 67,
-    submarines: 11,
-    destroyers: 6,
-    frigates: 13,
-    aircraftCarriers: 2,
-    nuclearWarheads: 225,
-    dataSources: [
-      { metric: "defenseBudgetUsd", source: "SIPRI 2023", confidence: "high", lastUpdated: "2024" },
-    ],
-  },
-  {
-    code: "FR",
-    name: "France",
-    flagEmoji: "🇫🇷",
-    continent: "Europe",
-    region: "Western Europe",
-    alliances: ["NATO", "EU"],
-    activePersonnel: 203850,
-    reservePersonnel: 40820,
-    paramilitary: 101400,
-    defenseBudgetUsd: 56.6e9,
-    gdpUsd: 2.78e12,
-    population: 68000000,
-    landAreaKm2: 643801,
-    aircraft: 1055,
-    fighterJets: 254,
-    attackHelicopters: 56,
-    transportHelicopters: 196,
-    tanks: 215,
-    armoredVehicles: 6558,
-    selfPropelledArtillery: 109,
-    rocketProjectors: 136,
-    navalVessels: 180,
-    submarines: 10,
-    destroyers: 0,
-    frigates: 21,
-    aircraftCarriers: 1,
-    nuclearWarheads: 290,
-    dataSources: [
-      { metric: "defenseBudgetUsd", source: "SIPRI 2023", confidence: "high", lastUpdated: "2024" },
-    ],
-  },
-];
+export interface MilitaryMetrics {
+  activePersonnel: number;
+  reservePersonnel: number;
+  defenseBudgetUsd: number;
+  gdpUsd: number;
+  aircraft: number;
+  fighterJets: number;
+  attackHelicopters: number;
+  tanks: number;
+  armoredVehicles: number;
+  navalVessels: number;
+  submarines: number;
+  aircraftCarriers: number;
+  nuclearWarheads: number;
+  population: number;
+  landAreaKm2: number;
+}
 
-export const TIMELINES_DATA = [
-  { countryCode: "US", year: 2015, defenseBudgetUsd: 596e9, activePersonnel: 1373650, gdpUsd: 18238e9 },
-  { countryCode: "US", year: 2020, defenseBudgetUsd: 778e9, activePersonnel: 1385950, gdpUsd: 21060e9 },
-  { countryCode: "US", year: 2023, defenseBudgetUsd: 886e9, activePersonnel: 1395350, gdpUsd: 25464e9 },
-  { countryCode: "CN", year: 2015, defenseBudgetUsd: 145e9, activePersonnel: 2335000, gdpUsd: 11065e9 },
-  { countryCode: "CN", year: 2020, defenseBudgetUsd: 193e9, activePersonnel: 2035000, gdpUsd: 14688e9 },
-  { countryCode: "CN", year: 2023, defenseBudgetUsd: 224e9, activePersonnel: 2035000, gdpUsd: 17963e9 },
+export interface Country {
+  code: string;
+  name: string;
+  flagEmoji: string;
+  region: string;
+  metrics: MilitaryMetrics;
+}
+
+export const COUNTRIES_DATA: Country[] = [
+  {
+    code: "US", name: "United States", flagEmoji: "🇺🇸", region: "North America",
+    metrics: {
+      activePersonnel: 1395350, reservePersonnel: 845600, defenseBudgetUsd: 886e9, gdpUsd: 25.46e12,
+      aircraft: 13300, fighterJets: 1956, attackHelicopters: 983, tanks: 5500, armoredVehicles: 39253,
+      navalVessels: 484, submarines: 68, aircraftCarriers: 11, nuclearWarheads: 5550, population: 331e6, landAreaKm2: 9833517
+    }
+  },
+  {
+    code: "CN", name: "China", flagEmoji: "🇨🇳", region: "East Asia",
+    metrics: {
+      activePersonnel: 2035000, reservePersonnel: 510000, defenseBudgetUsd: 224e9, gdpUsd: 17.96e12,
+      aircraft: 3285, fighterJets: 1200, attackHelicopters: 327, tanks: 5000, armoredVehicles: 35000,
+      navalVessels: 730, submarines: 60, aircraftCarriers: 3, nuclearWarheads: 410, population: 1412e6, landAreaKm2: 9596960
+    }
+  },
+  {
+    code: "RU", name: "Russia", flagEmoji: "🇷🇺", region: "Eastern Europe",
+    metrics: {
+      activePersonnel: 1320000, reservePersonnel: 2000000, defenseBudgetUsd: 109e9, gdpUsd: 2.24e12,
+      aircraft: 4292, fighterJets: 772, attackHelicopters: 537, tanks: 12420, armoredVehicles: 27038,
+      navalVessels: 598, submarines: 59, aircraftCarriers: 1, nuclearWarheads: 6255, population: 144e6, landAreaKm2: 17098242
+    }
+  },
+  {
+    code: "IN", name: "India", flagEmoji: "🇮🇳", region: "South Asia",
+    metrics: {
+      activePersonnel: 1455550, reservePersonnel: 1155000, defenseBudgetUsd: 81.4e9, gdpUsd: 3.39e12,
+      aircraft: 2229, fighterJets: 538, attackHelicopters: 35, tanks: 4614, armoredVehicles: 10000,
+      navalVessels: 295, submarines: 18, aircraftCarriers: 2, nuclearWarheads: 164, population: 1400e6, landAreaKm2: 3287263
+    }
+  },
+  {
+    code: "GB", name: "United Kingdom", flagEmoji: "🇬🇧", region: "Western Europe",
+    metrics: {
+      activePersonnel: 148500, reservePersonnel: 78840, defenseBudgetUsd: 68.5e9, gdpUsd: 3.07e12,
+      aircraft: 887, fighterJets: 155, attackHelicopters: 50, tanks: 213, armoredVehicles: 5015,
+      navalVessels: 67, submarines: 11, aircraftCarriers: 2, nuclearWarheads: 225, population: 67e6, landAreaKm2: 243610
+    }
+  },
+  {
+    code: "FR", name: "France", flagEmoji: "🇫🇷", region: "Western Europe",
+    metrics: {
+      activePersonnel: 203850, reservePersonnel: 40820, defenseBudgetUsd: 56.6e9, gdpUsd: 2.78e12,
+      aircraft: 1055, fighterJets: 254, attackHelicopters: 56, tanks: 215, armoredVehicles: 6558,
+      navalVessels: 180, submarines: 10, aircraftCarriers: 1, nuclearWarheads: 290, population: 68e6, landAreaKm2: 643801
+    }
+  },
+  {
+    code: "JP", name: "Japan", flagEmoji: "🇯🇵", region: "East Asia",
+    metrics: {
+      activePersonnel: 247150, reservePersonnel: 56100, defenseBudgetUsd: 46e9, gdpUsd: 4.23e12,
+      aircraft: 1449, fighterJets: 235, attackHelicopters: 102, tanks: 1013, armoredVehicles: 3800,
+      navalVessels: 155, submarines: 22, aircraftCarriers: 4, nuclearWarheads: 0, population: 125e6, landAreaKm2: 377975
+    }
+  },
+  {
+    code: "KR", name: "South Korea", flagEmoji: "🇰🇷", region: "East Asia",
+    metrics: {
+      activePersonnel: 500000, reservePersonnel: 3100000, defenseBudgetUsd: 43.1e9, gdpUsd: 1.67e12,
+      aircraft: 1614, fighterJets: 395, attackHelicopters: 50, tanks: 2290, armoredVehicles: 7900,
+      navalVessels: 166, submarines: 22, aircraftCarriers: 1, nuclearWarheads: 0, population: 52e6, landAreaKm2: 100210
+    }
+  },
+  {
+    code: "IL", name: "Israel", flagEmoji: "🇮🇱", region: "Middle East",
+    metrics: {
+      activePersonnel: 169500, reservePersonnel: 465000, defenseBudgetUsd: 23.4e9, gdpUsd: 0.527e12,
+      aircraft: 612, fighterJets: 241, attackHelicopters: 48, tanks: 1370, armoredVehicles: 10000,
+      navalVessels: 65, submarines: 5, aircraftCarriers: 0, nuclearWarheads: 90, population: 9e6, landAreaKm2: 22072
+    }
+  },
+  {
+    code: "KP", name: "North Korea", flagEmoji: "🇰🇵", region: "East Asia",
+    metrics: {
+      activePersonnel: 1280000, reservePersonnel: 600000, defenseBudgetUsd: 4e9, gdpUsd: 0.018e12,
+      aircraft: 563, fighterJets: 82, attackHelicopters: 20, tanks: 6000, armoredVehicles: 4000,
+      navalVessels: 492, submarines: 71, aircraftCarriers: 0, nuclearWarheads: 40, population: 26e6, landAreaKm2: 120538
+    }
+  }
 ];
