@@ -12,11 +12,12 @@ import { Target, Users, Shield, Zap, Info, List } from "lucide-react";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
+// Mapping ISO2 codes to numeric IDs used in world-atlas TopoJSON
 const ISO2_TO_NUMERIC: Record<string, string> = {
   US: "840", RU: "643", CN: "156", IN: "356", GB: "826", FR: "250",
   DE: "276", JP: "392", KR: "410", TR: "792", PK: "586", IL: "376",
-  BR: "076", IT: "380", EG: "818", SA: "682", AU: "036", CA: "124",
-  UA: "804", PL: "616", KP: "408", NO: "578", SE: "752", FI: "246", DK: "208"
+  BR: "076", IT: "380", EG: "818", SA: "682", UA: "804", PL: "616", 
+  KP: "408", NO: "578", SE: "752", FI: "246", DK: "208"
 };
 
 export default function MapPage() {
@@ -33,10 +34,11 @@ export default function MapPage() {
   [selectedCode, scores]);
 
   const getColor = (score: number) => {
-    if (score > 80) return "hsl(var(--primary))";
-    if (score > 50) return "hsl(var(--primary) / 0.7)";
-    if (score > 20) return "hsl(var(--primary) / 0.4)";
-    return "hsl(var(--primary) / 0.15)";
+    // Using explicit HSL values for better SVG compatibility
+    if (score > 80) return "hsl(47.9, 95.8%, 53.1%)";
+    if (score > 50) return "hsla(47.9, 95.8%, 53.1%, 0.7)";
+    if (score > 20) return "hsla(47.9, 95.8%, 53.1%, 0.4)";
+    return "hsla(47.9, 95.8%, 53.1%, 0.15)";
   };
 
   const IntelRow = ({ label, value, icon: Icon }: any) => (
@@ -84,7 +86,12 @@ export default function MapPage() {
                   <Geographies geography={GEO_URL}>
                     {({ geographies }) =>
                       geographies.map((geo) => {
-                        const countryCode = Object.keys(ISO2_TO_NUMERIC).find(key => ISO2_TO_NUMERIC[key] === geo.id);
+                        // Normalize IDs to handle string/number differences and padding
+                        const geoId = String(Number(geo.id));
+                        const countryCode = Object.keys(ISO2_TO_NUMERIC).find(key => 
+                          String(Number(ISO2_TO_NUMERIC[key])) === geoId
+                        );
+                        
                         const score = scores.find(s => s.code === countryCode);
                         const isSelected = selectedCode === countryCode;
                         
@@ -97,16 +104,16 @@ export default function MapPage() {
                             onClick={() => countryCode && setSelectedCode(countryCode)}
                             style={{
                               default: { 
-                                fill: score ? getColor(score.totalScore) : "hsl(var(--muted) / 0.05)", 
+                                fill: score ? getColor(score.totalScore) : "rgba(255, 255, 255, 0.05)", 
                                 outline: "none", 
-                                stroke: isSelected ? "hsl(var(--primary))" : "hsl(var(--border) / 0.5)", 
+                                stroke: isSelected ? "hsl(47.9, 95.8%, 53.1%)" : "rgba(255, 255, 255, 0.1)", 
                                 strokeWidth: isSelected ? 1.5 : 0.5 
                               },
                               hover: { 
-                                fill: score ? "hsl(var(--primary))" : "hsl(var(--muted) / 0.2)", 
+                                fill: score ? "hsl(47.9, 95.8%, 53.1%)" : "rgba(255, 255, 255, 0.2)", 
                                 outline: "none",
                                 cursor: countryCode ? "pointer" : "default",
-                                stroke: "hsl(var(--primary))",
+                                stroke: "hsl(47.9, 95.8%, 53.1%)",
                                 strokeWidth: 1
                               },
                               pressed: { outline: "none" },
