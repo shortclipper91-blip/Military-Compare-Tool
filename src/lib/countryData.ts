@@ -138,6 +138,54 @@ export const COUNTRIES_DATA: Country[] = [
     }
   },
   {
+    code: "AU", name: "Australia", flagEmoji: "🇦🇺", region: "Oceania",
+    metrics: {
+      activePersonnel: 60000, reservePersonnel: 30000, defenseBudgetUsd: 32e9, gdpUsd: 1.7e12,
+      aircraft: 450, fighterJets: 100, attackHelicopters: 57, tanks: 60, armoredVehicles: 3000,
+      navalVessels: 50, submarines: 6, aircraftCarriers: 0, nuclearWarheads: 0, population: 26e6, landAreaKm2: 7692024
+    }
+  },
+  {
+    code: "CA", name: "Canada", flagEmoji: "🇨🇦", region: "North America",
+    metrics: {
+      activePersonnel: 68000, reservePersonnel: 30000, defenseBudgetUsd: 22e9, gdpUsd: 2.1T,
+      aircraft: 400, fighterJets: 80, attackHelicopters: 21, tanks: 80, armoredVehicles: 1700,
+      navalVessels: 60, submarines: 4, aircraftCarriers: 0, nuclearWarheads: 0, population: 38e6, landAreaKm2: 9984670
+    }
+  },
+  {
+    code: "EG", name: "Egypt", flagEmoji: "🇪🇬", region: "North Africa",
+    metrics: {
+      activePersonnel: 440000, reservePersonnel: 480000, defenseBudgetUsd: 4.6e9, gdpUsd: 475e9,
+      aircraft: 1000, fighterJets: 290, attackHelicopters: 46, tanks: 4000, armoredVehicles: 12000,
+      navalVessels: 300, submarines: 8, aircraftCarriers: 2, nuclearWarheads: 0, population: 105e6, landAreaKm2: 1002450
+    }
+  },
+  {
+    code: "SA", name: "Saudi Arabia", flagEmoji: "🇸🇦", region: "Middle East",
+    metrics: {
+      activePersonnel: 250000, reservePersonnel: 0, defenseBudgetUsd: 75e9, gdpUsd: 1.06e12,
+      aircraft: 800, fighterJets: 270, attackHelicopters: 43, tanks: 1000, armoredVehicles: 6000,
+      navalVessels: 50, submarines: 0, aircraftCarriers: 0, nuclearWarheads: 0, population: 35e6, landAreaKm2: 2149690
+    }
+  },
+  {
+    code: "ES", name: "Spain", flagEmoji: "🇪🇸", region: "Western Europe",
+    metrics: {
+      activePersonnel: 120000, reservePersonnel: 15000, defenseBudgetUsd: 17e9, gdpUsd: 1.42e12,
+      aircraft: 500, fighterJets: 130, attackHelicopters: 24, tanks: 300, armoredVehicles: 2700,
+      navalVessels: 60, submarines: 3, aircraftCarriers: 1, nuclearWarheads: 0, population: 47e6, landAreaKm2: 505990
+    }
+  },
+  {
+    code: "MX", name: "Mexico", flagEmoji: "🇲🇽", region: "North America",
+    metrics: {
+      activePersonnel: 270000, reservePersonnel: 80000, defenseBudgetUsd: 8e9, gdpUsd: 1.32e12,
+      aircraft: 400, fighterJets: 0, attackHelicopters: 70, tanks: 0, armoredVehicles: 850,
+      navalVessels: 200, submarines: 0, aircraftCarriers: 0, nuclearWarheads: 0, population: 130e6, landAreaKm2: 1964375
+    }
+  },
+  {
     code: "NO", name: "Norway", flagEmoji: "🇳🇴", region: "Scandinavia",
     metrics: {
       activePersonnel: 23250, reservePersonnel: 40000, defenseBudgetUsd: 8.2e9, gdpUsd: 0.579e12,

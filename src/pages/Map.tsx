@@ -16,8 +16,9 @@ const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json"
 const ISO2_TO_NUMERIC: Record<string, string> = {
   US: "840", RU: "643", CN: "156", IN: "356", GB: "826", FR: "250",
   DE: "276", JP: "392", KR: "410", TR: "792", PK: "586", IL: "376",
-  BR: "076", IT: "380", EG: "818", SA: "682", UA: "804", PL: "616", 
-  KP: "408", NO: "578", SE: "752", FI: "246", DK: "208"
+  BR: "076", IT: "380", EG: "818", SA: "682", AU: "036", CA: "124",
+  UA: "804", PL: "616", KP: "408", NO: "578", SE: "752", FI: "246", 
+  DK: "208", ES: "724", MX: "484"
 };
 
 export default function MapPage() {
@@ -34,11 +35,11 @@ export default function MapPage() {
   [selectedCode, scores]);
 
   const getColor = (score: number) => {
-    // Using explicit HSL values for better SVG compatibility
-    if (score > 80) return "hsl(47.9, 95.8%, 53.1%)";
-    if (score > 50) return "hsla(47.9, 95.8%, 53.1%, 0.7)";
-    if (score > 20) return "hsla(47.9, 95.8%, 53.1%, 0.4)";
-    return "hsla(47.9, 95.8%, 53.1%, 0.15)";
+    // Tactical Multi-Color Tier System
+    if (score > 80) return "#f59e0b"; // Tier 1: Gold/Amber
+    if (score > 50) return "#3b82f6"; // Tier 2: Tactical Blue
+    if (score > 20) return "#8b5cf6"; // Tier 3: Strategic Violet
+    return "#10b981"; // Tier 4: Operational Emerald
   };
 
   const IntelRow = ({ label, value, icon: Icon }: any) => (
@@ -64,18 +65,22 @@ export default function MapPage() {
           <Card className="border-border/50 bg-card/30 overflow-hidden relative flex flex-col">
             <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
               <div className="bg-card/80 backdrop-blur-md border border-border p-3 rounded space-y-2">
-                <div className="text-[10px] font-mono uppercase text-muted-foreground mb-1">Strength Index</div>
+                <div className="text-[10px] font-mono uppercase text-muted-foreground mb-1">Strength Index Tiers</div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-primary rounded-sm" />
+                  <div className="w-3 h-3 bg-[#f59e0b] rounded-sm" />
                   <span className="text-[10px] font-mono uppercase">Tier 1 (80+)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-primary/70 rounded-sm" />
+                  <div className="w-3 h-3 bg-[#3b82f6] rounded-sm" />
                   <span className="text-[10px] font-mono uppercase">Tier 2 (50-80)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-primary/40 rounded-sm" />
+                  <div className="w-3 h-3 bg-[#8b5cf6] rounded-sm" />
                   <span className="text-[10px] font-mono uppercase">Tier 3 (20-50)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-[#10b981] rounded-sm" />
+                  <span className="text-[10px] font-mono uppercase">Tier 4 (<20)</span>
                 </div>
               </div>
             </div>
@@ -86,7 +91,6 @@ export default function MapPage() {
                   <Geographies geography={GEO_URL}>
                     {({ geographies }) =>
                       geographies.map((geo) => {
-                        // Normalize IDs to handle string/number differences and padding
                         const geoId = String(Number(geo.id));
                         const countryCode = Object.keys(ISO2_TO_NUMERIC).find(key => 
                           String(Number(ISO2_TO_NUMERIC[key])) === geoId
@@ -106,14 +110,14 @@ export default function MapPage() {
                               default: { 
                                 fill: score ? getColor(score.totalScore) : "rgba(255, 255, 255, 0.05)", 
                                 outline: "none", 
-                                stroke: isSelected ? "hsl(47.9, 95.8%, 53.1%)" : "rgba(255, 255, 255, 0.1)", 
+                                stroke: isSelected ? "#fff" : "rgba(255, 255, 255, 0.1)", 
                                 strokeWidth: isSelected ? 1.5 : 0.5 
                               },
                               hover: { 
-                                fill: score ? "hsl(47.9, 95.8%, 53.1%)" : "rgba(255, 255, 255, 0.2)", 
+                                fill: score ? getColor(score.totalScore) : "rgba(255, 255, 255, 0.2)", 
                                 outline: "none",
                                 cursor: countryCode ? "pointer" : "default",
-                                stroke: "hsl(47.9, 95.8%, 53.1%)",
+                                stroke: "#fff",
                                 strokeWidth: 1
                               },
                               pressed: { outline: "none" },
@@ -154,7 +158,9 @@ export default function MapPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-3xl font-black font-mono text-primary">{selectedScore.totalScore.toFixed(2)}</div>
+                        <div className="text-3xl font-black font-mono" style={{ color: getColor(selectedScore.totalScore) }}>
+                          {selectedScore.totalScore.toFixed(2)}
+                        </div>
                         <div className="text-[10px] font-mono text-muted-foreground uppercase">Strength Index</div>
                       </div>
                     </div>
