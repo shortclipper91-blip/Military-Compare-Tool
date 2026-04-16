@@ -6,7 +6,7 @@ import { FlagIcon } from "@/components/flag-icon";
 import { CountrySelector } from "@/components/CountrySelector";
 import { COUNTRIES_DATA } from "@/lib/countryData";
 import { calculateScores, DEFAULT_WEIGHTS } from "@/lib/scoring";
-import { formatCompact, formatCurrency } from "@/lib/format";
+import { formatCompact, formatCurrency, formatNumber } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +27,8 @@ import {
   ArrowRightLeft, 
   ShieldCheck, 
   Info,
-  Swords
+  Database,
+  Shield
 } from "lucide-react";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import METRIC_DESCRIPTIONS from "@/lib/metricDescriptions";
@@ -50,10 +51,11 @@ const StatRow = ({
 }) => {
   const isAWinner = (valA || 0) > (valB || 0);
   const isBWinner = (valB || 0) > (valA || 0);
-  const fmt = (v: number) =>
-    format === "currency"
-      ? formatCurrency(v)
-      : formatCompact(v);
+  const fmt = (v: number) => {
+    if (format === "currency") return formatCurrency(v);
+    if (format === "number") return formatNumber(v);
+    return formatCompact(v);
+  };
   
   const desc = metricKey ? METRIC_DESCRIPTIONS[metricKey] : "";
 
@@ -76,7 +78,7 @@ const StatRow = ({
                 <Info className="w-2.5 h-2.5 text-muted-foreground/20 group-hover:text-primary/40 cursor-help" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="font-mono text-[10px] uppercase tracking-wider">{desc}</p>
+                <p className="font-mono text-[10px] uppercase tracking-wider max-w-[200px]">{desc}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -171,35 +173,90 @@ export default function Index() {
           <div className="lg:col-span-2 space-y-8">
             <Card className="border-border/50 bg-card/30">
               <CardHeader className="border-b border-border/50 flex flex-row items-center justify-between">
-                <CardTitle className="text-xs font-mono uppercase tracking-widest">Detailed Metrics</CardTitle>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-xs font-mono uppercase tracking-widest">Detailed Metrics</CardTitle>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button className="p-1 hover:text-primary transition-colors">
+                          <Database className="w-3 h-3 text-muted-foreground/50" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-card border-border p-3">
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-mono uppercase tracking-widest text-primary border-b border-primary/20 pb-1">Intelligence Sources</p>
+                          <ul className="space-y-1">
+                            <li className="text-[9px] font-mono uppercase text-muted-foreground">• IISS Military Balance 2024</li>
+                            <li className="text-[9px] font-mono uppercase text-muted-foreground">• SIPRI Arms Transfers Database</li>
+                            <li className="text-[9px] font-mono uppercase text-muted-foreground">• Global Firepower Index 2024</li>
+                            <li className="text-[9px] font-mono uppercase text-muted-foreground">• FAS Nuclear Notebook 2023</li>
+                            <li className="text-[9px] font-mono uppercase text-muted-foreground">• World Bank Economic Data</li>
+                          </ul>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <div className="flex gap-4">
                   <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
                     <div className="w-2 h-2 bg-foreground" /> {countryA?.name}
                   </div>
                   <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
-                    <div className="w-2 h-2 bg-primary" /> {countryB?.name}
+                    <div className="w-2 h-2" style={{ backgroundColor: BRAVO_COLOR }} /> {countryB?.name}
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="space-y-6">
+                <div className="space-y-8">
                   <div>
-                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2">Manpower</h3>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                      <Users className="w-3 h-3" /> Manpower
+                    </h3>
                     <StatRow label="Active Personnel" valA={countryA?.metrics.activePersonnel} valB={countryB?.metrics.activePersonnel} metricKey="activePersonnel" />
                     <StatRow label="Reserve Forces" valA={countryA?.metrics.reservePersonnel} valB={countryB?.metrics.reservePersonnel} metricKey="reservePersonnel" />
+                    <StatRow label="Paramilitary" valA={countryA?.metrics.paramilitary} valB={countryB?.metrics.paramilitary} metricKey="paramilitary" />
                   </div>
+                  
                   <div>
-                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2">Air Power</h3>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                      <Plane className="w-3 h-3" /> Air Power
+                    </h3>
                     <StatRow label="Total Aircraft" valA={countryA?.metrics.aircraft} valB={countryB?.metrics.aircraft} metricKey="aircraft" />
                     <StatRow label="Fighter Jets" valA={countryA?.metrics.fighterJets} valB={countryB?.metrics.fighterJets} metricKey="fighterJets" />
+                    <StatRow label="Attack Helicopters" valA={countryA?.metrics.attackHelicopters} valB={countryB?.metrics.attackHelicopters} metricKey="attackHelicopters" />
                   </div>
+
                   <div>
-                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2">Naval Forces</h3>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                      <Target className="w-3 h-3" /> Ground Forces
+                    </h3>
+                    <StatRow label="Main Battle Tanks" valA={countryA?.metrics.tanks} valB={countryB?.metrics.tanks} metricKey="tanks" />
+                    <StatRow label="Armored Vehicles" valA={countryA?.metrics.armoredVehicles} valB={countryB?.metrics.armoredVehicles} metricKey="armoredVehicles" />
+                    <StatRow label="Artillery Units" valA={countryA?.metrics.selfPropelledArtillery} valB={countryB?.metrics.selfPropelledArtillery} metricKey="selfPropelledArtillery" />
+                    <StatRow label="Rocket Projectors" valA={countryA?.metrics.rocketProjectors} valB={countryB?.metrics.rocketProjectors} metricKey="rocketProjectors" />
+                  </div>
+
+                  <div>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                      <Anchor className="w-3 h-3" /> Naval Forces
+                    </h3>
                     <StatRow label="Total Vessels" valA={countryA?.metrics.navalVessels} valB={countryB?.metrics.navalVessels} metricKey="navalVessels" />
                     <StatRow label="Submarines" valA={countryA?.metrics.submarines} valB={countryB?.metrics.submarines} metricKey="submarines" />
+                    <StatRow label="Destroyers" valA={countryA?.metrics.destroyers} valB={countryB?.metrics.destroyers} metricKey="destroyers" />
+                    <StatRow label="Aircraft Carriers" valA={countryA?.metrics.aircraftCarriers} valB={countryB?.metrics.aircraftCarriers} metricKey="aircraftCarriers" />
                   </div>
+
                   <div>
-                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2">Economy</h3>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                      <Zap className="w-3 h-3" /> Strategic
+                    </h3>
+                    <StatRow label="Nuclear Warheads" valA={countryA?.metrics.nuclearWarheads} valB={countryB?.metrics.nuclearWarheads} metricKey="nuclearWarheads" format="number" />
+                  </div>
+
+                  <div>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                      <DollarSign className="w-3 h-3" /> Economy
+                    </h3>
                     <StatRow label="Defense Budget" valA={countryA?.metrics.defenseBudgetUsd} valB={countryB?.metrics.defenseBudgetUsd} format="currency" metricKey="defenseBudgetUsd" />
                     <StatRow label="GDP" valA={countryA?.metrics.gdpUsd} valB={countryB?.metrics.gdpUsd} format="currency" metricKey="gdpUsd" />
                   </div>
