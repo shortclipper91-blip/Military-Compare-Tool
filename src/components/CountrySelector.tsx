@@ -5,8 +5,8 @@ import * as Popover from "@radix-ui/react-popover";
 import { Command } from "cmdk";
 import { Check, Search, Target, ChevronDown } from "lucide-react";
 import { FlagIcon } from "./flag-icon";
-import { COUNTRIES_DATA } from "@/lib/countryData";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CountrySelectorProps {
   value: string;
@@ -15,18 +15,21 @@ interface CountrySelectorProps {
   exclude?: string[];
   className?: string;
   label?: string;
+  countries: any[]; // New prop
 }
 
-export function CountrySelector({ 
-  value, 
-  onChange, 
-  placeholder = "Select nation...", 
-  exclude = [], 
+export function CountrySelector({
+  value,
+  onChange,
+  placeholder = "Select nation...",
+  exclude = [],
   className,
-  label
+  label,
+  countries,
 }: CountrySelectorProps) {
   const [open, setOpen] = useState(false);
-  const selectedCountry = COUNTRIES_DATA.find((c) => c.code === value);
+  const selectedCountry = countries.find((c) => c.code === value);
+  const isMobile = useIsMobile();
 
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
@@ -45,12 +48,12 @@ export function CountrySelector({
           >
             <div className="flex items-center gap-3 overflow-hidden">
               {selectedCountry ? (
-                <>
+                <div className="flex items-center gap-3 overflow-hidden">
                   <FlagIcon code={selectedCountry.code} size={20} className="shrink-0 grayscale-[0.5] group-hover:grayscale-0 transition-all" />
                   <span className="truncate font-bold uppercase tracking-tight font-mono">
                     {selectedCountry.name}
                   </span>
-                </>
+                </div>
               ) : (
                 <span className="text-muted-foreground font-mono text-xs uppercase tracking-wider">
                   {placeholder}
@@ -58,7 +61,7 @@ export function CountrySelector({
               )}
             </div>
             <div className="flex items-center gap-2 ml-2 shrink-0">
-              <div className="h-4 w-[1px] bg-border group-hover:bg-primary/30" />
+              <div className="h-4 w-[1px] bg-border/50" />
               <ChevronDown className={cn("h-4 w-4 opacity-50 transition-transform duration-200", open && "rotate-180 opacity-100 text-primary")} />
             </div>
           </button>
@@ -85,34 +88,36 @@ export function CountrySelector({
                   </div>
                 </Command.Empty>
                 <Command.Group>
-                  {COUNTRIES_DATA.filter(c => !exclude.includes(c.code)).map((country) => (
-                    <Command.Item
-                      key={country.code}
-                      value={country.name}
-                      onSelect={() => {
-                        onChange(country.code);
-                        setOpen(false);
-                      }}
-                      className="relative flex cursor-pointer select-none items-center rounded-none px-3 py-2.5 text-sm outline-none aria-selected:bg-primary/10 aria-selected:text-primary transition-colors border-l-2 border-transparent aria-selected:border-primary"
-                    >
-                      <div className="flex items-center gap-3 flex-1">
-                        <FlagIcon code={country.code} size={18} />
-                        <div className="flex flex-col">
-                          <span className="font-bold uppercase tracking-tight font-mono leading-none">
-                            {country.name}
-                          </span>
-                          <span className="text-[9px] font-mono text-muted-foreground uppercase mt-1">
-                            Sector: {country.region}
-                          </span>
+                  {countries
+                    .filter((c) => !exclude.includes(c.code))
+                    .map((country) => (
+                      <Command.Item
+                        key={country.code}
+                        value={country.name}
+                        onSelect={() => {
+                          onChange(country.code);
+                          setOpen(false);
+                        }}
+                        className="relative flex cursor-pointer select-none items-center rounded-none px-3 py-2.5 text-sm outline-none aria-selected:bg-primary/10 aria-selected:text-primary transition-colors border-l-2 border-transparent aria-selected:border-primary"
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          <FlagIcon code={country.code} size={18} />
+                          <div className="flex flex-col">
+                            <span className="font-bold uppercase tracking-tight font-mono">
+                              {country.name}
+                            </span>
+                            <span className="text-[9px] font-mono text-muted-foreground uppercase mt-1">
+                              {country.region}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      {value === country.code && (
-                        <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20">
-                          <Check className="h-3 w-3 text-primary" />
-                        </div>
-                      )}
-                    </Command.Item>
-                  ))}
+                        {value === country.code && (
+                          <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20">
+                            <Check className="h-3 w-3 text-primary" />
+                          </div>
+                        )}
+                      </Command.Item>
+                    ))}
                 </Command.Group>
               </Command.List>
               <div className="border-t border-border p-2 bg-accent/10">
@@ -121,7 +126,7 @@ export function CountrySelector({
                 </div>
               </div>
             </Command>
-          </Popover.Content>
+          </Popover.Portal>
         </Popover.Portal>
       </Popover.Root>
     </div>
