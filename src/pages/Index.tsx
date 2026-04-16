@@ -42,7 +42,7 @@ export default function Index() {
         <div className={`text-right font-mono text-sm ${isAWinner ? "text-primary font-bold" : "text-muted-foreground"}`}>
           {fmt(valA || 0)}
         </div>
-        <div className="text-[10px] font-mono uppercase text-muted-foreground/40 w-32 text-center tracking-tighter group-hover:text-muted-foreground transition-colors">
+        <div className="text-[10px] font-mono uppercase text-muted-foreground/40 w-24 sm:w-32 text-center tracking-tighter group-hover:text-muted-foreground transition-colors truncate">
           {label}
         </div>
         <div className={`text-left font-mono text-sm ${isBWinner ? "text-primary font-bold" : "text-muted-foreground"}`}>
@@ -55,22 +55,22 @@ export default function Index() {
   return (
     <Layout>
       <div className="space-y-8">
-        <header className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+        <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-primary mb-1">
               <ShieldCheck className="w-5 h-5" />
               <span className="text-[10px] font-mono uppercase tracking-[0.3em]">Operational Status: Active</span>
             </div>
-            <h1 className="text-5xl font-black tracking-tighter uppercase italic leading-none">Strategic Assessment</h1>
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tighter uppercase italic leading-none">Strategic Assessment</h1>
             <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest opacity-70">Head-to-Head Force Comparison Matrix</p>
           </div>
           
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto bg-card/50 p-3 border border-border/50 backdrop-blur-sm">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto bg-card/50 p-3 border border-border/50 backdrop-blur-sm">
             <CountrySelector 
               label="Force Alpha"
               value={selected[0]} 
               onChange={(val) => setSelected([val, selected[1]])} 
-              className="w-full sm:w-64"
+              className="w-full sm:w-56"
             />
             <Button 
               variant="outline" 
@@ -84,7 +84,7 @@ export default function Index() {
               label="Force Bravo"
               value={selected[1]} 
               onChange={(val) => setSelected([selected[0], val])} 
-              className="w-full sm:w-64"
+              className="w-full sm:w-56"
             />
           </div>
         </header>
@@ -92,33 +92,33 @@ export default function Index() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <Card className="lg:col-span-2 border-border/50 bg-card/30 backdrop-blur-sm rounded-none">
             <CardHeader className="border-b border-border/50 bg-accent/10">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                  <div className="p-1 border border-border/50 bg-background">
-                    <FlagIcon code={countries[0].code} size={32} />
+              <div className="flex justify-between items-center gap-2">
+                <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                  <div className="p-1 border border-border/50 bg-background shrink-0">
+                    <FlagIcon code={countries[0].code} size={24} className="sm:w-8" />
                   </div>
-                  <div className="flex flex-col">
-                    <span className="font-black uppercase tracking-tighter text-lg leading-none">{countries[0].name}</span>
-                    <span className="text-[9px] font-mono text-muted-foreground uppercase mt-1">Sector: {countries[0].region}</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-black uppercase tracking-tighter text-base sm:text-lg leading-none truncate">{countries[0].name}</span>
+                    <span className="text-[9px] font-mono text-muted-foreground uppercase mt-1 truncate">Sector: {countries[0].region}</span>
                   </div>
                 </div>
-                <div className="flex flex-col items-center">
-                  <div className="h-8 w-[1px] bg-border/50" />
+                <div className="flex flex-col items-center shrink-0">
+                  <div className="h-6 sm:h-8 w-[1px] bg-border/50" />
                   <div className="text-[10px] font-mono text-primary font-bold my-1">VS</div>
-                  <div className="h-8 w-[1px] bg-border/50" />
+                  <div className="h-6 sm:h-8 w-[1px] bg-border/50" />
                 </div>
-                <div className="flex items-center gap-4 text-right">
-                  <div className="flex flex-col">
-                    <span className="font-black uppercase tracking-tighter text-lg leading-none">{countries[1].name}</span>
-                    <span className="text-[9px] font-mono text-muted-foreground uppercase mt-1">Sector: {countries[1].region}</span>
+                <div className="flex items-center gap-2 sm:gap-4 text-right min-w-0">
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-black uppercase tracking-tighter text-base sm:text-lg leading-none truncate">{countries[1].name}</span>
+                    <span className="text-[9px] font-mono text-muted-foreground uppercase mt-1 truncate">Sector: {countries[1].region}</span>
                   </div>
-                  <div className="p-1 border border-border/50 bg-background">
-                    <FlagIcon code={countries[1].code} size={32} />
+                  <div className="p-1 border border-border/50 bg-background shrink-0">
+                    <FlagIcon code={countries[1].code} size={24} className="sm:w-8" />
                   </div>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-6 space-y-10">
+            <CardContent className="p-4 sm:p-6 space-y-10">
               <section>
                 <div className="flex items-center gap-3 mb-6">
                   <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-border/50" />
@@ -193,14 +193,14 @@ export default function Index() {
                 <CardTitle className="text-xs font-mono uppercase tracking-[0.3em] text-primary">Military Strength Index</CardTitle>
               </CardHeader>
               <CardContent className="space-y-8 relative z-10">
-                <div className="flex justify-between items-end">
-                  <div className="space-y-1">
-                    <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">{countries[0].name}</div>
-                    <div className="text-5xl font-black font-mono leading-none">{scoreA.totalScore.toFixed(2)}</div>
+                <div className="grid grid-cols-2 gap-4 items-end">
+                  <div className="space-y-1 min-w-0">
+                    <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countries[0].name}</div>
+                    <div className="text-3xl sm:text-4xl xl:text-5xl font-black font-mono leading-none">{scoreA.totalScore.toFixed(2)}</div>
                   </div>
-                  <div className="text-right space-y-1">
-                    <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">{countries[1].name}</div>
-                    <div className="text-5xl font-black font-mono text-primary leading-none">{scoreB.totalScore.toFixed(2)}</div>
+                  <div className="text-right space-y-1 min-w-0">
+                    <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countries[1].name}</div>
+                    <div className="text-3xl sm:text-4xl xl:text-5xl font-black font-mono text-primary leading-none">{scoreB.totalScore.toFixed(2)}</div>
                   </div>
                 </div>
                 <div className="space-y-2">
