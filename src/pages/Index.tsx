@@ -27,14 +27,14 @@ import {
   ArrowRightLeft, 
   ShieldCheck, 
   Info,
-  Database,
-  Shield
+  Database
 } from "lucide-react";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import METRIC_DESCRIPTIONS from "@/lib/metricDescriptions";
 import { cn } from "@/lib/utils";
 
-const BRAVO_COLOR = "hsl(var(--chart-4))";
+const ALPHA_COLOR = "hsl(var(--foreground))";
+const BRAVO_COLOR = "hsl(var(--primary))";
 
 const StatRow = ({
   label,
@@ -87,7 +87,7 @@ const StatRow = ({
       <div className={cn(
         "text-left font-mono text-xs sm:text-sm",
         isBWinner ? "text-primary font-bold" : "text-muted-foreground"
-      )} style={isBWinner ? { color: BRAVO_COLOR } : {}}>
+      )} style={isBWinner ? { color: "hsl(var(--primary))" } : {}}>
         {fmt(valB || 0)}
       </div>
     </div>
@@ -130,6 +130,9 @@ export default function Index() {
       { category: "Economy", A: scoreA.categories.economy, B: scoreB.categories.economy },
     ];
   }, [scoreA, scoreB]);
+
+  const isAWinner = (scoreA?.totalScore || 0) > (scoreB?.totalScore || 0);
+  const isBWinner = (scoreB?.totalScore || 0) > (scoreA?.totalScore || 0);
 
   return (
     <Layout>
@@ -197,12 +200,14 @@ export default function Index() {
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-6">
                   <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
-                    <div className="w-2 h-2 bg-foreground" /> {countryA?.name}
+                    <FlagIcon code={countryA?.code || ""} size={16} />
+                    <span className="hidden sm:inline">{countryA?.name}</span>
                   </div>
                   <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
-                    <div className="w-2 h-2" style={{ backgroundColor: BRAVO_COLOR }} /> {countryB?.name}
+                    <FlagIcon code={countryB?.code || ""} size={16} />
+                    <span className="hidden sm:inline" style={{ color: "hsl(var(--primary))" }}>{countryB?.name}</span>
                   </div>
                 </div>
               </CardHeader>
@@ -277,11 +282,21 @@ export default function Index() {
                 <div className="grid grid-cols-2 gap-2 items-end">
                   <div className="space-y-1 min-w-0">
                     <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countryA?.name}</div>
-                    <div className="text-2xl sm:text-3xl xl:text-4xl font-black font-mono leading-none truncate">{scoreA?.totalScore?.toFixed(2) ?? "0.00"}</div>
+                    <div className={cn(
+                      "text-2xl sm:text-3xl xl:text-4xl font-black font-mono leading-none truncate",
+                      isAWinner && "text-primary"
+                    )}>
+                      {scoreA?.totalScore?.toFixed(2) ?? "0.00"}
+                    </div>
                   </div>
                   <div className="text-right space-y-1 min-w-0">
                     <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countryB?.name}</div>
-                    <div className="text-2xl sm:text-3xl xl:text-4xl font-black font-mono text-primary leading-none truncate" style={{ color: BRAVO_COLOR }}>{scoreB?.totalScore?.toFixed(2) ?? "0.00"}</div>
+                    <div className={cn(
+                      "text-2xl sm:text-3xl xl:text-4xl font-black font-mono leading-none truncate",
+                      isBWinner && "text-primary"
+                    )}>
+                      {scoreB?.totalScore?.toFixed(2) ?? "0.00"}
+                    </div>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -296,7 +311,7 @@ export default function Index() {
                       className="h-full transition-all duration-500"
                       style={{
                         width: `${((scoreB?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
-                        backgroundColor: BRAVO_COLOR
+                        backgroundColor: "hsl(var(--primary))"
                       }}
                     />
                   </div>
@@ -320,8 +335,22 @@ export default function Index() {
                       dataKey="category"
                       tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "monospace", fontWeight: "bold" }}
                     />
-                    <Radar name={countryA?.name} dataKey="A" stroke="hsl(var(--foreground))" fill="hsl(var(--foreground))" fillOpacity={0.2} strokeWidth={2} />
-                    <Radar name={countryB?.name} dataKey="B" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} strokeWidth={2} />
+                    <Radar 
+                      name={countryA?.name} 
+                      dataKey="A" 
+                      stroke={ALPHA_COLOR} 
+                      fill={ALPHA_COLOR} 
+                      fillOpacity={0.4} 
+                      strokeWidth={2} 
+                    />
+                    <Radar 
+                      name={countryB?.name} 
+                      dataKey="B" 
+                      stroke={BRAVO_COLOR} 
+                      fill={BRAVO_COLOR} 
+                      fillOpacity={0.5} 
+                      strokeWidth={2} 
+                    />
                     <RechartsTooltip
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",
