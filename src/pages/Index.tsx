@@ -9,8 +9,9 @@ import { calculateScores } from "@/lib/scoring";
 import { formatCompact, formatCurrency } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip } from "recharts";
-import { Users, Plane, Target, Anchor, DollarSign, Zap, ArrowRightLeft, ShieldCheck } from "lucide-react";
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
+import { Users, Plane, Target, Anchor, DollarSign, Zap, ArrowRightLeft, ShieldCheck, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function Index() {
   const [selected, setSelected] = useState(["US", "CN"]);
@@ -32,7 +33,7 @@ export default function Index() {
     { category: "Economy", A: scoreA.categories.economy, B: scoreB.categories.economy },
   ];
 
-  const StatRow = ({ label, valA, valB, format = "compact" }: any) => {
+  const StatRow = ({ label, valA, valB, format = "compact", source }: any) => {
     const isAWinner = (valA || 0) > (valB || 0);
     const isBWinner = (valB || 0) > (valA || 0);
     const fmt = (v: number) => format === "currency" ? formatCurrency(v) : formatCompact(v);
@@ -42,8 +43,22 @@ export default function Index() {
         <div className={`text-right font-mono text-xs sm:text-sm ${isAWinner ? "text-primary font-bold" : "text-muted-foreground"}`}>
           {fmt(valA || 0)}
         </div>
-        <div className="text-[9px] sm:text-[10px] font-mono uppercase text-muted-foreground/40 w-20 sm:w-32 text-center tracking-tighter group-hover:text-muted-foreground transition-colors truncate">
-          {label}
+        <div className="flex items-center justify-center gap-1.5 w-24 sm:w-40">
+          <div className="text-[9px] sm:text-[10px] font-mono uppercase text-muted-foreground/40 text-center tracking-tighter group-hover:text-muted-foreground transition-colors truncate">
+            {label}
+          </div>
+          {source && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-2.5 h-2.5 text-muted-foreground/20 group-hover:text-primary/40 cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="font-mono text-[10px] uppercase tracking-wider">Source: {source}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
         <div className={`text-left font-mono text-xs sm:text-sm ${isBWinner ? "text-primary font-bold" : "text-muted-foreground"}`}>
           {fmt(valB || 0)}
@@ -127,9 +142,10 @@ export default function Index() {
                   </h3>
                   <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-border/50" />
                 </div>
-                <StatRow label="Active Personnel" valA={countries[0].metrics.activePersonnel} valB={countries[1].metrics.activePersonnel} />
-                <StatRow label="Reserve Forces" valA={countries[0].metrics.reservePersonnel} valB={countries[1].metrics.reservePersonnel} />
-                <StatRow label="Total Population" valA={countries[0].metrics.population} valB={countries[1].metrics.population} />
+                <StatRow label="Active Personnel" valA={countries[0].metrics.activePersonnel} valB={countries[1].metrics.activePersonnel} source={countries[0].sources?.personnel} />
+                <StatRow label="Reserve Forces" valA={countries[0].metrics.reservePersonnel} valB={countries[1].metrics.reservePersonnel} source={countries[0].sources?.personnel} />
+                <StatRow label="Paramilitary" valA={countries[0].metrics.paramilitary} valB={countries[1].metrics.paramilitary} source={countries[0].sources?.personnel} />
+                <StatRow label="Total Population" valA={countries[0].metrics.population} valB={countries[1].metrics.population} source={countries[0].sources?.economy} />
               </section>
 
               <section>
@@ -140,9 +156,10 @@ export default function Index() {
                   </h3>
                   <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-border/50" />
                 </div>
-                <StatRow label="Total Aircraft" valA={countries[0].metrics.aircraft} valB={countries[1].metrics.aircraft} />
-                <StatRow label="Fighter Jets" valA={countries[0].metrics.fighterJets} valB={countries[1].metrics.fighterJets} />
-                <StatRow label="Attack Helos" valA={countries[0].metrics.attackHelicopters} valB={countries[1].metrics.attackHelicopters} />
+                <StatRow label="Total Aircraft" valA={countries[0].metrics.aircraft} valB={countries[1].metrics.aircraft} source={countries[0].sources?.equipment} />
+                <StatRow label="Fighter Jets" valA={countries[0].metrics.fighterJets} valB={countries[1].metrics.fighterJets} source={countries[0].sources?.equipment} />
+                <StatRow label="Attack Helos" valA={countries[0].metrics.attackHelicopters} valB={countries[1].metrics.attackHelicopters} source={countries[0].sources?.equipment} />
+                <StatRow label="Transport Helos" valA={countries[0].metrics.transportHelicopters} valB={countries[1].metrics.transportHelicopters} source={countries[0].sources?.equipment} />
               </section>
 
               <section>
@@ -153,8 +170,10 @@ export default function Index() {
                   </h3>
                   <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-border/50" />
                 </div>
-                <StatRow label="Main Battle Tanks" valA={countries[0].metrics.tanks} valB={countries[1].metrics.tanks} />
-                <StatRow label="Armored Vehicles" valA={countries[0].metrics.armoredVehicles} valB={countries[1].metrics.armoredVehicles} />
+                <StatRow label="Main Battle Tanks" valA={countries[0].metrics.tanks} valB={countries[1].metrics.tanks} source={countries[0].sources?.equipment} />
+                <StatRow label="Armored Vehicles" valA={countries[0].metrics.armoredVehicles} valB={countries[1].metrics.armoredVehicles} source={countries[0].sources?.equipment} />
+                <StatRow label="SP Artillery" valA={countries[0].metrics.selfPropelledArtillery} valB={countries[1].metrics.selfPropelledArtillery} source={countries[0].sources?.equipment} />
+                <StatRow label="Rocket Projectors" valA={countries[0].metrics.rocketProjectors} valB={countries[1].metrics.rocketProjectors} source={countries[0].sources?.equipment} />
               </section>
 
               <section>
@@ -165,9 +184,11 @@ export default function Index() {
                   </h3>
                   <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-border/50" />
                 </div>
-                <StatRow label="Total Vessels" valA={countries[0].metrics.navalVessels} valB={countries[1].metrics.navalVessels} />
-                <StatRow label="Submarines" valA={countries[0].metrics.submarines} valB={countries[1].metrics.submarines} />
-                <StatRow label="Aircraft Carriers" valA={countries[0].metrics.aircraftCarriers} valB={countries[1].metrics.aircraftCarriers} />
+                <StatRow label="Total Vessels" valA={countries[0].metrics.navalVessels} valB={countries[1].metrics.navalVessels} source={countries[0].sources?.equipment} />
+                <StatRow label="Submarines" valA={countries[0].metrics.submarines} valB={countries[1].metrics.submarines} source={countries[0].sources?.equipment} />
+                <StatRow label="Destroyers" valA={countries[0].metrics.destroyers} valB={countries[1].metrics.destroyers} source={countries[0].sources?.equipment} />
+                <StatRow label="Frigates" valA={countries[0].metrics.frigates} valB={countries[1].metrics.frigates} source={countries[0].sources?.equipment} />
+                <StatRow label="Aircraft Carriers" valA={countries[0].metrics.aircraftCarriers} valB={countries[1].metrics.aircraftCarriers} source={countries[0].sources?.equipment} />
               </section>
 
               <section>
@@ -178,8 +199,9 @@ export default function Index() {
                   </h3>
                   <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-border/50" />
                 </div>
-                <StatRow label="Nuclear Warheads" valA={countries[0].metrics.nuclearWarheads} valB={countries[1].metrics.nuclearWarheads} />
-                <StatRow label="Defense Budget" valA={countries[0].metrics.defenseBudgetUsd} valB={countries[1].metrics.defenseBudgetUsd} format="currency" />
+                <StatRow label="Nuclear Warheads" valA={countries[0].metrics.nuclearWarheads} valB={countries[1].metrics.nuclearWarheads} source={countries[0].sources?.nuclear} />
+                <StatRow label="Defense Budget" valA={countries[0].metrics.defenseBudgetUsd} valB={countries[1].metrics.defenseBudgetUsd} format="currency" source={countries[0].sources?.budget} />
+                <StatRow label="GDP (USD)" valA={countries[0].metrics.gdpUsd} valB={countries[1].metrics.gdpUsd} format="currency" source={countries[0].sources?.economy} />
               </section>
             </CardContent>
           </Card>
@@ -227,7 +249,7 @@ export default function Index() {
                     <PolarAngleAxis dataKey="category" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "monospace", fontWeight: "bold" }} />
                     <Radar name={countries[0].name} dataKey="A" stroke="hsl(var(--foreground))" fill="hsl(var(--foreground))" fillOpacity={0.2} strokeWidth={2} />
                     <Radar name={countries[1].name} dataKey="B" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} strokeWidth={2} />
-                    <Tooltip 
+                    <RechartsTooltip 
                       contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: "12px", fontFamily: "monospace", borderRadius: "0px" }}
                       itemStyle={{ textTransform: "uppercase", fontWeight: "bold" }}
                     />
