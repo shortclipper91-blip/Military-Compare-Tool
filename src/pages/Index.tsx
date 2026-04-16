@@ -120,7 +120,7 @@ export default function Index() {
             </CardHeader>
             <CardContent className="p-4 sm:p-6 space-y-10">
               <section>
-                <div className="flex items-center gap-3 mb-6"><dyad-write path="src/pages/Index.tsx" description="Continuing the Index page layout refinement to prevent overlapping.">
+                <div className="flex items-center gap-3 mb-6">
                   <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-border/50" />
                   <h3 className="text-[10px] font-mono uppercase text-primary flex items-center gap-2 shrink-0 tracking-[0.2em]">
                     <Users className="w-3 h-3" /> Personnel & Manpower
