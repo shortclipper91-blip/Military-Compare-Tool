@@ -35,6 +35,8 @@ import METRIC_DESCRIPTIONS from "@/lib/metricDescriptions";
 import { cn } from "@/lib/utils";
 
 const BRAVO_COLOR = "hsl(var(--chart-4))";
+const PRIMARY_COLOR = "hsl(var(--primary))";
+const FOREGROUND_COLOR = "hsl(var(--foreground))";
 
 const StatRow = ({
   label,
@@ -147,8 +149,7 @@ export default function Index() {
             <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest opacity-70">Head-to‑Head Force Comparison Matrix</p>
           </div>
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3 w-full lg:w-auto bg-card/50 p-3 border border-border/50 backdrop-blur-sm">
-            <CountrySelector
-              label="Force Alpha"
+            <CountrySelector              label="Force Alpha"
               value={selected[0]}
               onChange={(val) => setSelected([val, selected[1]])}
               countries={filteredCountries}
@@ -335,15 +336,20 @@ export default function Index() {
                     <PolarGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
                     <PolarAngleAxis
                       dataKey="category"
-                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "monospace", fontWeight: "bold" }}
+                      tick={{
+                        fill: FOREGROUND_COLOR,
+                        fontSize: 10,
+                        fontFamily: "monospace",
+                        fontWeight: "bold",
+                      }}
                     />
                     <Radar 
                       name={countryA?.name} 
                       dataKey="A" 
-                      stroke="hsl(var(--foreground))" 
-                      fill="hsl(var(--foreground))" 
-                      fillOpacity={0.4} 
-                      strokeWidth={4} 
+                      stroke={PRIMARY_COLOR} 
+                      fill={PRIMARY_COLOR} 
+                      fillOpacity={0.5} 
+                      strokeWidth={5} 
                     />
                     <Radar 
                       name={countryB?.name} 
@@ -351,12 +357,13 @@ export default function Index() {
                       stroke={BRAVO_COLOR} 
                       fill={BRAVO_COLOR} 
                       fillOpacity={0.3} 
-                      strokeWidth={4} 
+                      strokeWidth={5} 
                     />
                     <RechartsTooltip
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",
                         border: "1px solid hsl(var(--border))",
+                        color: FOREGROUND_COLOR,
                         fontSize: "12px",
                         fontFamily: "monospace",
                         borderRadius: "0px",
