@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
 import { Command } from "cmdk";
-import { Check, ChevronsUpDown, Search } from "lucide-react";
+import { Check, Search, Target, ChevronDown } from "lucide-react";
 import { FlagIcon } from "./flag-icon";
-import { Country, COUNTRIES_DATA } from "@/lib/countryData";
+import { COUNTRIES_DATA } from "@/lib/countryData";
 import { cn } from "@/lib/utils";
 
 interface CountrySelectorProps {
@@ -14,73 +14,116 @@ interface CountrySelectorProps {
   placeholder?: string;
   exclude?: string[];
   className?: string;
+  label?: string;
 }
 
-export function CountrySelector({ value, onChange, placeholder = "Select country...", exclude = [], className }: CountrySelectorProps) {
+export function CountrySelector({ 
+  value, 
+  onChange, 
+  placeholder = "Select nation...", 
+  exclude = [], 
+  className,
+  label
+}: CountrySelectorProps) {
   const [open, setOpen] = useState(false);
   const selectedCountry = COUNTRIES_DATA.find((c) => c.code === value);
 
   return (
-    <Popover.Root open={open} onOpenChange={setOpen}>
-      <Popover.Trigger asChild>
-        <button
-          className={cn(
-            "flex h-12 w-full items-center justify-between rounded-md border border-border bg-card px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:bg-accent/50",
-            className
-          )}
-        >
-          <div className="flex items-center gap-3 overflow-hidden">
-            {selectedCountry ? (
-              <>
-                <FlagIcon code={selectedCountry.code} size={24} className="shrink-0" />
-                <span className="truncate font-bold uppercase tracking-tight">{selectedCountry.name}</span>
-              </>
-            ) : (
-              <span className="text-muted-foreground">{placeholder}</span>
+    <div className={cn("flex flex-col gap-1.5", className)}>
+      {label && (
+        <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground px-1">
+          {label}
+        </label>
+      )}
+      <Popover.Root open={open} onOpenChange={setOpen}>
+        <Popover.Trigger asChild>
+          <button
+            className={cn(
+              "flex h-12 w-full items-center justify-between rounded-none border border-border bg-card/50 px-4 py-2 text-sm transition-all hover:bg-accent/50 hover:border-primary/50 group focus:outline-none focus:ring-1 focus:ring-primary/30",
+              open && "border-primary/50 bg-accent/50"
             )}
-          </div>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </button>
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content
-          className="z-50 w-[var(--radix-popover-trigger-width)] min-w-[200px] overflow-hidden rounded-md border border-border bg-card text-popover-foreground shadow-xl animate-in fade-in zoom-in-95 duration-100"
-          align="start"
-          sideOffset={4}
-        >
-          <Command className="flex h-full w-full flex-col overflow-hidden">
-            <div className="flex items-center border-b border-border px-3" cmdk-input-wrapper="">
-              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-              <Command.Input
-                placeholder="Search nations..."
-                className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-              />
+          >
+            <div className="flex items-center gap-3 overflow-hidden">
+              {selectedCountry ? (
+                <>
+                  <FlagIcon code={selectedCountry.code} size={20} className="shrink-0 grayscale-[0.5] group-hover:grayscale-0 transition-all" />
+                  <span className="truncate font-bold uppercase tracking-tight font-mono">
+                    {selectedCountry.name}
+                  </span>
+                </>
+              ) : (
+                <span className="text-muted-foreground font-mono text-xs uppercase tracking-wider">
+                  {placeholder}
+                </span>
+              )}
             </div>
-            <Command.List className="max-h-[300px] overflow-y-auto overflow-x-hidden p-1">
-              <Command.Empty className="py-6 text-center text-sm text-muted-foreground">No nation found.</Command.Empty>
-              <Command.Group>
-                {COUNTRIES_DATA.filter(c => !exclude.includes(c.code)).map((country) => (
-                  <Command.Item
-                    key={country.code}
-                    value={country.name}
-                    onSelect={() => {
-                      onChange(country.code);
-                      setOpen(false);
-                    }}
-                    className="relative flex cursor-default select-none items-center rounded-sm px-2 py-2 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3 flex-1">
-                      <FlagIcon code={country.code} size={20} />
-                      <span className="font-medium uppercase tracking-tight">{country.name}</span>
-                    </div>
-                    {value === country.code && <Check className="h-4 w-4 text-primary" />}
-                  </Command.Item>
-                ))}
-              </Command.Group>
-            </Command.List>
-          </Command>
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
+            <div className="flex items-center gap-2 ml-2 shrink-0">
+              <div className="h-4 w-[1px] bg-border group-hover:bg-primary/30" />
+              <ChevronDown className={cn("h-4 w-4 opacity-50 transition-transform duration-200", open && "rotate-180 opacity-100 text-primary")} />
+            </div>
+          </button>
+        </Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Content
+            className="z-50 w-[var(--radix-popover-trigger-width)] min-w-[240px] overflow-hidden rounded-none border border-primary/30 bg-card text-popover-foreground shadow-[0_0_20px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in-95 duration-150"
+            align="start"
+            sideOffset={4}
+          >
+            <Command className="flex h-full w-full flex-col overflow-hidden bg-card">
+              <div className="flex items-center border-b border-border px-3 bg-accent/20" cmdk-input-wrapper="">
+                <Search className="mr-2 h-4 w-4 shrink-0 text-primary opacity-70" />
+                <Command.Input
+                  placeholder="Filter by nation name or code..."
+                  className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground font-mono"
+                />
+              </div>
+              <Command.List className="max-h-[300px] overflow-y-auto overflow-x-hidden p-1 custom-scrollbar">
+                <Command.Empty className="py-8 text-center">
+                  <div className="flex flex-col items-center gap-2 opacity-40">
+                    <Target className="w-8 h-8" />
+                    <span className="text-xs font-mono uppercase tracking-widest">No Intel Found</span>
+                  </div>
+                </Command.Empty>
+                <Command.Group>
+                  {COUNTRIES_DATA.filter(c => !exclude.includes(c.code)).map((country) => (
+                    <Command.Item
+                      key={country.code}
+                      value={country.name}
+                      onSelect={() => {
+                        onChange(country.code);
+                        setOpen(false);
+                      }}
+                      className="relative flex cursor-pointer select-none items-center rounded-none px-3 py-2.5 text-sm outline-none aria-selected:bg-primary/10 aria-selected:text-primary transition-colors border-l-2 border-transparent aria-selected:border-primary"
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <FlagIcon code={country.code} size={18} />
+                        <div className="flex flex-col">
+                          <span className="font-bold uppercase tracking-tight font-mono leading-none">
+                            {country.name}
+                          </span>
+                          <span className="text-[9px] font-mono text-muted-foreground uppercase mt-1">
+                            Sector: {country.region}
+                          </span>
+                        </div>
+                      </div>
+                      {value === country.code && (
+                        <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20">
+                          <Check className="h-3 w-3 text-primary" />
+                        </div>
+                      )}
+                    </Command.Item>
+                  ))}
+                </Command.Group>
+              </Command.List>
+              <div className="border-t border-border p-2 bg-accent/10">
+                <div className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest text-center">
+                  STRATCOM Database v4.2.0
+                </div>
+              </div>
+            </Command>
+          </Popover.Content>
+        </Popover.Portal>
+      </Popover.Root>
+    </div>
   );
 }
