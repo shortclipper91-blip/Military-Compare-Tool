@@ -146,15 +146,7 @@ export default function Index() {
             <h1 className="text-3xl sm:text-4xl xl:text-5xl font-black tracking-tighter uppercase italic">Strategic Assessment</h1>
             <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest opacity-70">Head-to‑Head Force Comparison Matrix</p>
           </div>
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto bg-card/50 p-3 border border-border/50 backdrop-blur-sm">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setSelected([selected[1], selected[0]])}
-              className="shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-none border-border/50 hover:border-primary/50 hover:text-primary"
-            >
-              <ArrowRightLeft className="w-4 h-4" />
-            </Button>
+          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3 w-full lg:w-auto bg-card/50 p-3 border border-border/50 backdrop-blur-sm">
             <CountrySelector
               label="Force Alpha"
               value={selected[0]}
@@ -162,6 +154,16 @@ export default function Index() {
               countries={filteredCountries}
               className="w-full sm:w-48 xl:w-56"
             />
+            <div className="flex items-center justify-center pb-1">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setSelected([selected[1], selected[0]])}
+                className="shrink-0 h-10 w-10 rounded-none border-border/50 hover:border-primary/50 hover:text-primary"
+              >
+                <ArrowRightLeft className="w-4 h-4" />
+              </Button>
+            </div>
             <CountrySelector
               label="Force Bravo"
               value={selected[1]}
