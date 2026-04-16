@@ -138,7 +138,7 @@ export default function MapPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-[#1e293b] rounded-sm" />
-                  <span className="text-[10px] font-mono uppercase">Tier 4 (<20 Index)</span>
+                  <span className="text-[10px] font-mono uppercase">{"Tier 4 (<20 Index)"}</span>
                 </div>
               </div>
               <div className="pt-4 border-t border-border/50">
