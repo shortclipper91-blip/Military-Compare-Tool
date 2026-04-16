@@ -120,6 +120,9 @@ export default function Index() {
   const scoreA = useMemo(() => scores.find((s) => s.code === selected[0]), [scores, selected]);
   const scoreB = useMemo(() => scores.find((s) => s.code === selected[1]), [scores, selected]);
 
+  const isAWinner = (scoreA?.totalScore || 0) > (scoreB?.totalScore || 0);
+  const isBWinner = (scoreB?.totalScore || 0) > (scoreA?.totalScore || 0);
+
   const radarData = useMemo(() => {
     if (!scoreA || !scoreB) return [];
     return [
@@ -197,12 +200,14 @@ export default function Index() {
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-6">
                   <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
-                    <div className="w-2 h-2 bg-foreground" /> {countryA?.name}
+                    <FlagIcon code={countryA?.code || ""} size={16} />
+                    <span className={cn(isAWinner && "text-primary font-bold")}>{countryA?.name}</span>
                   </div>
                   <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
-                    <div className="w-2 h-2" style={{ backgroundColor: BRAVO_COLOR }} /> {countryB?.name}
+                    <FlagIcon code={countryB?.code || ""} size={16} />
+                    <span className={cn(isBWinner && "font-bold")} style={isBWinner ? { color: BRAVO_COLOR } : {}}>{countryB?.name}</span>
                   </div>
                 </div>
               </CardHeader>
@@ -277,11 +282,21 @@ export default function Index() {
                 <div className="grid grid-cols-2 gap-2 items-end">
                   <div className="space-y-1 min-w-0">
                     <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countryA?.name}</div>
-                    <div className="text-2xl sm:text-3xl xl:text-4xl font-black font-mono leading-none truncate">{scoreA?.totalScore?.toFixed(2) ?? "0.00"}</div>
+                    <div className={cn(
+                      "text-2xl sm:text-3xl xl:text-4xl font-black font-mono leading-none truncate",
+                      isAWinner ? "text-foreground" : "text-muted-foreground"
+                    )}>
+                      {scoreA?.totalScore?.toFixed(2) ?? "0.00"}
+                    </div>
                   </div>
                   <div className="text-right space-y-1 min-w-0">
                     <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countryB?.name}</div>
-                    <div className="text-2xl sm:text-3xl xl:text-4xl font-black font-mono text-primary leading-none truncate" style={{ color: BRAVO_COLOR }}>{scoreB?.totalScore?.toFixed(2) ?? "0.00"}</div>
+                    <div className={cn(
+                      "text-2xl sm:text-3xl xl:text-4xl font-black font-mono leading-none truncate",
+                      isBWinner ? "" : "text-muted-foreground"
+                    )} style={isBWinner ? { color: BRAVO_COLOR } : {}}>
+                      {scoreB?.totalScore?.toFixed(2) ?? "0.00"}
+                    </div>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -320,8 +335,22 @@ export default function Index() {
                       dataKey="category"
                       tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "monospace", fontWeight: "bold" }}
                     />
-                    <Radar name={countryA?.name} dataKey="A" stroke="hsl(var(--foreground))" fill="hsl(var(--foreground))" fillOpacity={0.2} strokeWidth={2} />
-                    <Radar name={countryB?.name} dataKey="B" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} strokeWidth={2} />
+                    <Radar 
+                      name={countryA?.name} 
+                      dataKey="A" 
+                      stroke="hsl(var(--foreground))" 
+                      fill="hsl(var(--foreground))" 
+                      fillOpacity={0.3} 
+                      strokeWidth={3} 
+                    />
+                    <Radar 
+                      name={countryB?.name} 
+                      dataKey="B" 
+                      stroke={BRAVO_COLOR} 
+                      fill={BRAVO_COLOR} 
+                      fillOpacity={0.4} 
+                      strokeWidth={3} 
+                    />
                     <RechartsTooltip
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",
