@@ -21,7 +21,7 @@ import { Users, Plane, Target, Anchor, DollarSign, Zap, ArrowRightLeft, ShieldCh
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import METRIC_DESCRIPTIONS from "@/lib/metricDescriptions";
 import { cn } from "@/lib/utils";
-import "./extra.css"; // <-- Import the new stylesheet
+import "../extra.css"; // Corrected import path
 
 const BRAVO_COLOR = "hsl(var(--chart-4))";
 const PRIMARY_COLOR = "hsl(var(--primary))";
@@ -297,7 +297,8 @@ export default function Index() {
                         width: `${((scoreA?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
                       }}
                     />
-                    <div                      className="h-full transition-all duration-500"
+                    <div
+                      className="h-full transition-all duration-500"
                       style={{
                         width: `${((scoreB?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
                         backgroundColor: BRAVO_COLOR
