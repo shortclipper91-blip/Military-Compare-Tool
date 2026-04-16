@@ -1,0 +1,16 @@
+:root {
+  --foreground: #ffffff;
+  --card: #1a2235;
+  --border: #263047;
+  --primary: #ffd700;
+  --chart-4: #ff9800;
+  --muted-foreground: #d1d5db;
+}
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

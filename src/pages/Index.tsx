@@ -17,21 +17,11 @@ import {
   ResponsiveContainer,
   Tooltip as RechartsTooltip,
 } from "recharts";
-import { 
-  Users, 
-  Plane, 
-  Target, 
-  Anchor, 
-  DollarSign,   Zap, 
-  ArrowRightLeft, 
-  ShieldCheck, 
-  Info,
-  Database,
-  Shield
-} from "lucide-react";
+import { Users, Plane, Target, Anchor, DollarSign, Zap, ArrowRightLeft, ShieldCheck, Info } from "lucide-react";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import METRIC_DESCRIPTIONS from "@/lib/metricDescriptions";
 import { cn } from "@/lib/utils";
+import "./extra.css"; // <-- Import the new stylesheet
 
 const BRAVO_COLOR = "hsl(var(--chart-4))";
 const PRIMARY_COLOR = "hsl(var(--primary))";
@@ -165,7 +155,8 @@ export default function Index() {
                 <ArrowRightLeft className="w-4 h-4" />
               </Button>
             </div>
-            <CountrySelector              label="Force Bravo"
+            <CountrySelector
+              label="Force Bravo"
               value={selected[1]}
               onChange={(val) => setSelected([selected[0], val])}
               countries={filteredCountries}
@@ -223,7 +214,7 @@ export default function Index() {
                     <StatRow label="Reserve Forces" valA={countryA?.metrics.reservePersonnel} valB={countryB?.metrics.reservePersonnel} metricKey="reservePersonnel" />
                     <StatRow label="Paramilitary" valA={countryA?.metrics.paramilitary} valB={countryB?.metrics.paramilitary} metricKey="paramilitary" />
                   </div>
-                                    <div>
+                                   <div>
                     <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
                       <Plane className="w-3 h-3" /> Air Power
                     </h3>
@@ -306,8 +297,7 @@ export default function Index() {
                         width: `${((scoreA?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
                       }}
                     />
-                    <div
-                      className="h-full transition-all duration-500"
+                    <div                      className="h-full transition-all duration-500"
                       style={{
                         width: `${((scoreB?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
                         backgroundColor: BRAVO_COLOR
@@ -333,7 +323,7 @@ export default function Index() {
                     <PolarAngleAxis
                       dataKey="category"
                       tick={{
-                        fill: FOREGROUND_COLOR,
+                        fill: "white", // Force white text for axis labels
                         fontSize: 10,
                         fontFamily: "monospace",
                         fontWeight: "bold",
@@ -358,7 +348,7 @@ export default function Index() {
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",
                         border: "1px solid hsl(var(--border))",
-                        color: FOREGROUND_COLOR,
+                        color: "white", // Force white text in tooltip
                         fontSize: "12px",
                         fontFamily: "monospace",
                         borderRadius: "0px",
