@@ -22,8 +22,7 @@ import {
   Plane, 
   Target, 
   Anchor, 
-  DollarSign, 
-  Zap, 
+  DollarSign,   Zap, 
   ArrowRightLeft, 
   ShieldCheck, 
   Info,
@@ -149,7 +148,8 @@ export default function Index() {
             <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest opacity-70">Head-to‑Head Force Comparison Matrix</p>
           </div>
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3 w-full lg:w-auto bg-card/50 p-3 border border-border/50 backdrop-blur-sm">
-            <CountrySelector              label="Force Alpha"
+            <CountrySelector
+              label="Force Alpha"
               value={selected[0]}
               onChange={(val) => setSelected([val, selected[1]])}
               countries={filteredCountries}
@@ -165,8 +165,7 @@ export default function Index() {
                 <ArrowRightLeft className="w-4 h-4" />
               </Button>
             </div>
-            <CountrySelector
-              label="Force Bravo"
+            <CountrySelector              label="Force Bravo"
               value={selected[1]}
               onChange={(val) => setSelected([selected[0], val])}
               countries={filteredCountries}
@@ -224,8 +223,7 @@ export default function Index() {
                     <StatRow label="Reserve Forces" valA={countryA?.metrics.reservePersonnel} valB={countryB?.metrics.reservePersonnel} metricKey="reservePersonnel" />
                     <StatRow label="Paramilitary" valA={countryA?.metrics.paramilitary} valB={countryB?.metrics.paramilitary} metricKey="paramilitary" />
                   </div>
-                  
-                  <div>
+                                    <div>
                     <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
                       <Plane className="w-3 h-3" /> Air Power
                     </h3>
@@ -263,8 +261,7 @@ export default function Index() {
 
                   <div>
                     <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
-                      <DollarSign className="w-3 h-3" /> Economy
-                    </h3>
+                      <DollarSign className="w-3 h-3" /> Economy                    </h3>
                     <StatRow label="Defense Budget" valA={countryA?.metrics.defenseBudgetUsd} valB={countryB?.metrics.defenseBudgetUsd} format="currency" metricKey="defenseBudgetUsd" />
                     <StatRow label="GDP" valA={countryA?.metrics.gdpUsd} valB={countryB?.metrics.gdpUsd} format="currency" metricKey="gdpUsd" />
                   </div>
@@ -304,8 +301,7 @@ export default function Index() {
                 </div>
                 <div className="space-y-2">
                   <div className="h-3 w-full bg-muted rounded-none overflow-hidden flex border border-border/50">
-                    <div
-                      className="bg-foreground h-full transition-all duration-500"
+                    <div                      className="bg-foreground h-full transition-all duration-500"
                       style={{
                         width: `${((scoreA?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
                       }}
@@ -348,15 +344,14 @@ export default function Index() {
                       dataKey="A" 
                       stroke={PRIMARY_COLOR} 
                       fill={PRIMARY_COLOR} 
-                      fillOpacity={0.5} 
+                      fillOpacity={0.6} 
                       strokeWidth={5} 
                     />
                     <Radar 
                       name={countryB?.name} 
-                      dataKey="B" 
-                      stroke={BRAVO_COLOR} 
+                      dataKey="B"                       stroke={BRAVO_COLOR} 
                       fill={BRAVO_COLOR} 
-                      fillOpacity={0.3} 
+                      fillOpacity={0.4} 
                       strokeWidth={5} 
                     />
                     <RechartsTooltip
