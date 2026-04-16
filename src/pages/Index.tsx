@@ -14,6 +14,7 @@ import {
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
+  PolarRadiusAxis,
   ResponsiveContainer,
   Tooltip as RechartsTooltip,
 } from "recharts";
@@ -337,6 +338,11 @@ export default function Index() {
                       dataKey="category"
                       tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "monospace", fontWeight: "bold" }}
                     />
+                    <PolarRadiusAxis
+                      domain={[0, "auto"]}
+                      tick={false}
+                      axisLine={false}
+                    />
                     <Radar 
                       name={countryA?.name} 
                       dataKey="A" 
@@ -361,7 +367,17 @@ export default function Index() {
                         fontFamily: "monospace",
                         borderRadius: "0px",
                       }}
-                      itemStyle={{ textTransform: "uppercase", fontWeight: "bold" }}
+                      labelStyle={{ 
+                        fontSize: "12px",
+                        fontFamily: "monospace",
+                        fill: "hsl(var(--muted-foreground))"
+                      }}
+                      itemStyle={{ 
+                        textTransform: "uppercase", 
+                        fontWeight: "bold",
+                        fontSize: "12px",
+                        fontFamily: "monospace"
+                      }}
                     />
                   </RadarChart>
                 </ResponsiveContainer>
