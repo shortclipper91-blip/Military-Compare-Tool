@@ -1,4 +1,4 @@
-import { Country } from "./countryData";
+import { Country, COUNTRIES_DATA } from "./countryData";
 
 export interface CategoryWeights {
   manpower: number;
@@ -19,13 +19,8 @@ export const DEFAULT_WEIGHTS: CategoryWeights = {
   logistics: 0.1,
 };
 
-/**
- * Pre‑compute scores for all countries once.
- * This improves performance when many comparisons are performed.
- */
-export const precomputedScores = (() => {
-  const scores: any[] = [];
-  const maxVals: any = {
+export function calculateScores(countries: Country[], weights: CategoryWeights = DEFAULT_WEIGHTS) {
+  const maxVals = {
     personnel: 0,
     aircraft: 0,
     tanks: 0,
@@ -33,8 +28,8 @@ export const precomputedScores = (() => {
     budget: 0,
   };
 
-  // Determine max values for normalization
-  CountryData.forEach((c) => {
+  // Determine max values for normalization across the provided set
+  countries.forEach((c) => {
     maxVals.personnel = Math.max(
       maxVals.personnel,
       (c.metrics.activePersonnel ?? 0) + (c.metrics.reservePersonnel ?? 0)
@@ -45,7 +40,7 @@ export const precomputedScores = (() => {
     maxVals.budget = Math.max(maxVals.budget, c.metrics.defenseBudgetUsd ?? 0);
   });
 
-  CountryData.forEach((c) => {
+  return countries.map((c) => {
     const normalize = (value: number, max: number) => (max ? value / max : 0) * 100;
 
     const manpowerScore = normalize(
@@ -64,17 +59,19 @@ export const precomputedScores = (() => {
       (c.metrics.navalVessels ?? 0) +
         (c.metrics.submarines ?? 0) * 2 +
         (c.metrics.aircraftCarriers ?? 0) * 10,
-      maxVals.naval    );
+      maxVals.naval
+    );
     const economyScore = normalize(c.metrics.defenseBudgetUsd ?? 0, maxVals.budget);
 
     const totalScore = (
-      manpowerScore * DEFAULT_WEIGHTS.manpower +
-      airPowerScore * DEFAULT_WEIGHTS.airPower +
-      groundScore * DEFAULT_WEIGHTS.groundForces +
-      navalScore * DEFAULT_WEIGHTS.navalForces +
-      economyScore * DEFAULT_WEIGHTS.economy    );
+      manpowerScore * weights.manpower +
+      airPowerScore * weights.airPower +
+      groundScore * weights.groundForces +
+      navalScore * weights.navalForces +
+      economyScore * weights.economy
+    );
 
-    scores.push({
+    return {
       code: c.code,
       totalScore,
       categories: {
@@ -84,8 +81,6 @@ export const precomputedScores = (() => {
         navalForces: navalScore,
         economy: economyScore,
       },
-    });
+    };
   });
-
-  return scores;
-})();
+}
