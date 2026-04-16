@@ -22,7 +22,8 @@ import {
   Plane, 
   Target, 
   Anchor, 
-  DollarSign,   Zap, 
+  DollarSign, 
+  Zap, 
   ArrowRightLeft, 
   ShieldCheck, 
   Info,
@@ -308,7 +309,8 @@ export default function Index() {
                         width: `${((scoreA?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
                       }}
                     />
-                    <div                      className="h-full transition-all duration-500"
+                    <div
+                      className="h-full transition-all duration-500"
                       style={{
                         width: `${((scoreB?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
                         backgroundColor: BRAVO_COLOR
@@ -338,8 +340,8 @@ export default function Index() {
                     <Radar 
                       name={countryA?.name} 
                       dataKey="A" 
-                      stroke="hsl(var(--primary))" 
-                      fill="hsl(var(--primary))" 
+                      stroke="hsl(var(--foreground))" 
+                      fill="hsl(var(--foreground))" 
                       fillOpacity={0.4} 
                       strokeWidth={4} 
                     />
@@ -357,7 +359,6 @@ export default function Index() {
                         border: "1px solid hsl(var(--border))",
                         fontSize: "12px",
                         fontFamily: "monospace",
-                        color: "hsl(var(--foreground))",
                         borderRadius: "0px",
                       }}
                       itemStyle={{ textTransform: "uppercase", fontWeight: "bold" }}
