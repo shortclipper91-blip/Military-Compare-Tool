@@ -41,6 +41,10 @@ export default function Index() {
   const scoreA = useMemo(() => scores.find((s) => s.code === selected[0]), [scores, selected]);
   const scoreB = useMemo(() => scores.find((s) => s.code === selected[1]), [scores, selected]);
 
+  // Define country objects for use in JSX (e.g., radar chart labels)
+  const countryA = useMemo(() => COUNTRIES_DATA.find((c) => c.code === selected[0]), [selected]);
+  const countryB = useMemo(() => COUNTRIES_DATA.find((c) => c.code === selected[1]), [selected]);
+
   // Then create radar data using the defined scores
   const radarData = useMemo(() => {
     if (!scoreA || !scoreB) return [];
@@ -83,14 +87,13 @@ export default function Index() {
                 }}
               />
               {/* Alpha line with distinct color */}
-              <Radar 
-                name={countryA?.name} 
-                dataKey="A" 
+              <Radar                 name={countryA?.name}                 dataKey="A" 
                 stroke={ALPHA_COLOR} 
                 fill={ALPHA_COLOR} 
                 fillOpacity={0.25} 
                 strokeWidth={3} 
-                activeShape={{ type: "circle", r: 4 }}                                activeShapeFill={ALPHA_COLOR} 
+                activeShape={{ type: "circle", r: 4 }}                
+                activeShapeFill={ALPHA_COLOR} 
                 activeShapeStroke={ALPHA_COLOR} 
               />
               {/* Bravo line with distinct color */}
@@ -101,8 +104,8 @@ export default function Index() {
                 fill={BRAVO_COLOR} 
                 fillOpacity={0.35} 
                 strokeWidth={3} 
-                activeShape={{ type: "circle", r: 4 }}                
-                activeShapeFill={BRAVO_COLOR}                                activeShapeStroke={BRAVO_COLOR} 
+                activeShape={{ type: "circle", r: 4 }}                                activeShapeFill={BRAVO_COLOR}                
+                activeShapeStroke={BRAVO_COLOR} 
               />
               {/* Enhanced tooltip styling */}
               <RechartsTooltip                contentStyle={{
