@@ -22,7 +22,8 @@ import {
   Plane, 
   Target, 
   Anchor, 
-  DollarSign,   Zap, 
+  DollarSign, 
+  Zap, 
   ArrowRightLeft, 
   ShieldCheck,   Info,
   Database,
@@ -37,18 +38,6 @@ const ALPHA_COLOR = "hsl(var(--primary))";
 
 export default function Index() {
   // ... existing state and logic ...
-
-  // Ensure radarData is always defined
-  const radarData = useMemo(() => {
-    if (!scoreA || !scoreB) return [];
-    return [
-      { category: "Manpower", A: scoreA.categories.manpower, B: scoreB.categories.manpower },
-      { category: "Air Power", A: scoreA.categories.airPower, B: scoreB.categories.airPower },
-      { category: "Ground", A: scoreA.categories.groundForces, B: scoreB.categories.groundForces },
-      { category: "Naval", A: scoreA.categories.navalForces, B: scoreB.categories.navalForces },
-      { category: "Economy", A: scoreA.categories.economy, B: scoreB.categories.economy },
-    ];
-  }, [scoreA, scoreB]);
 
   return (
     <Layout>
@@ -66,10 +55,12 @@ export default function Index() {
             <RadarChart data={radarData}>
               {/* Enhanced colors for better visibility */}
               <PolarGrid 
-                stroke="hsl(var(--border))"                 strokeDasharray="3 3" 
+                stroke="hsl(var(--border))" 
+                strokeDasharray="3 3" 
                 strokeWidth={1.5} 
               />
-              <PolarAngleAxis                dataKey="category"
+              <PolarAngleAxis
+                dataKey="category"
                 tick={{ 
                   fill: "hsl(var(--muted-foreground))", 
                   fontSize: 10, 
@@ -82,24 +73,26 @@ export default function Index() {
                 name={countryA?.name} 
                 dataKey="A" 
                 stroke={ALPHA_COLOR} 
-                fill={ALPHA_COLOR}                 fillOpacity={0.25} 
+                fill={ALPHA_COLOR} 
+                fillOpacity={0.25} 
                 strokeWidth={3} 
-                activeShape={{ type: "circle", r: 4 }}                
-                activeShapeFill={ALPHA_COLOR} 
+                activeShape={{ type: "circle", r: 4 }}                 activeShapeFill={ALPHA_COLOR} 
                 activeShapeStroke={ALPHA_COLOR} 
               />
               {/* Bravo line with distinct color */}
               <Radar 
                 name={countryB?.name} 
                 dataKey="B" 
-                stroke={BRAVO_COLOR}                 fill={BRAVO_COLOR} 
-                fillOpacity={0.35}                 strokeWidth={3} 
+                stroke={BRAVO_COLOR} 
+                fill={BRAVO_COLOR} 
+                fillOpacity={0.35} 
+                strokeWidth={3} 
                 activeShape={{ type: "circle", r: 4 }} 
-                activeShapeFill={BRAVO_COLOR}                
-                activeShapeStroke={BRAVO_COLOR} 
+                activeShapeFill={BRAVO_COLOR}                 activeShapeStroke={BRAVO_COLOR} 
               />
               {/* Enhanced tooltip styling */}
-              <RechartsTooltip                contentStyle={{
+              <RechartsTooltip
+                contentStyle={{
                   backgroundColor: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
                   fontSize: "12px",
