@@ -21,8 +21,7 @@ import {   Users,
   Plane,   Target,   Anchor,   DollarSign, 
   Zap,   ArrowRightLeft,   ShieldCheck,   Info,
   Database,
-  Shield
-} from "lucide-react";
+  Shield} from "lucide-react";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import METRIC_DESCRIPTIONS from "@/lib/metricDescriptions";
 import { cn } from "@/lib/utils";
@@ -31,9 +30,6 @@ const BRAVO_COLOR = "hsl(var(--chart-4))";
 const ALPHA_COLOR = "hsl(var(--primary))";
 
 export default function Index() {
-  // Initialize selected country codes with default values
-  const [selected, setSelected] = useState<string[]>(["US", "CN"]);
-
   // ... existing state and logic ...
 
   // Calculate scores first
@@ -90,19 +86,19 @@ export default function Index() {
                 fill={ALPHA_COLOR} 
                 fillOpacity={0.25} 
                 strokeWidth={3} 
-                activeShape={{ type: "circle", r: 4 }}                                activeShapeFill={ALPHA_COLOR} 
+                activeShape={{ type: "circle", r: 4 }}                
+                activeShapeFill={ALPHA_COLOR} 
                 activeShapeStroke={ALPHA_COLOR} 
               />
               {/* Bravo line with distinct color */}
-              <Radar 
-                name={countryB?.name} 
-                dataKey="B" 
+              <Radar                 name={countryB?.name}                 dataKey="B" 
                 stroke={BRAVO_COLOR} 
                 fill={BRAVO_COLOR} 
                 fillOpacity={0.35} 
                 strokeWidth={3} 
                 activeShape={{ type: "circle", r: 4 }}                
-                activeShapeFill={BRAVO_COLOR}                                activeShapeStroke={BRAVO_COLOR} 
+                activeShapeFill={BRAVO_COLOR}                
+                activeShapeStroke={BRAVO_COLOR} 
               />
               {/* Enhanced tooltip styling */}
               <RechartsTooltip                contentStyle={{
