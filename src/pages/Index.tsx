@@ -17,86 +17,44 @@ import {
   ResponsiveContainer,
   Tooltip as RechartsTooltip,
 } from "recharts";
-import { Users, Plane, Target, Anchor, DollarSign, Zap, ArrowRightLeft, ShieldCheck, Info } from "lucide-react";
-import { Tooltip, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useListCountries } from "@workspace/api-client-react";
+import { 
+  Users, 
+  Plane, 
+  Target, 
+  Anchor, 
+  DollarSign, 
+  Zap, 
+  ArrowRightLeft, 
+  ShieldCheck, 
+  Info,
+  Swords
+} from "lucide-react";
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import html2canvas from "html2canvas";
 import METRIC_DESCRIPTIONS from "@/lib/metricDescriptions";
 import { cn } from "@/lib/utils";
 
-const [selected, setSelected] = useState(["US", "CN"]);
-const [scenario, setScenario] = useState<"full" | "air" | "naval" | "ground">("full");
-const [weights, setWeights] = useState<Record<string, number>>(DEFAULT_WEIGHTS);
-const [filterPanelOpen, setFilterPanelOpen] = useState(false);
-const [filterValues, setFilterValues] = useState({
-  continent: "",
-  alliance: "",
-  region: "",
-});
-
-const { data: countries = [] } = useListCountries({});
-const filteredCountries = useMemo(() => {
-  return COUNTRIES_DATA.filter((c) => {
-    const f = filterValues;
-    return (
-      (f.continent ? c.continent === f.continent : true) &&
-      (f.alliance ? c.alliances.includes(f.alliance) : true) &&
-      (f.region ? c.region === f.region : true)
-    );
-  });
-}, [filterValues]);
-
-const [scoreA, setScoreA] = useState<any>(null);
-const [scoreB, setScoreB] = useState<any>(null);
-const [radarData, setRadarData] = useState<any[]>([]);
-
-useEffect(() => {
-  if (selected.length >= 2) {
-    const comparisonRequest = {
-      countryCodes: selected,
-      weights: weights as any,
-      scenario,
-    };
-    // Simulate compareCountries call – in real app this would call the API
-    // Here we just reuse the client‑side scoring logic for demo purposes
-    const allScores = calculateScores(COUNTRIES_DATA);
-    const scoreAObj = allScores.find((s) => s.code === selected[0]) || allScores[0];
-    const scoreBObj = allScores.find((s) => s.code === selected[1]) || allScores[1];
-    setScoreA(allScoreObj);
-    setScoreB(allScoreObj);
-    const radar = [
-      { category: "Manpower", A: scoreAObj.categories.manpower, B: scoreBObj.categories.manpower },
-      { category: "Air Power", A: scoreAObj.categories.airPower, B: scoreBObj.categories.airPower },
-      { category: "Ground", A: scoreAObj.categories.groundForces, B: scoreBObj.categories.groundForces },
-      { category: "Naval", A: scoreAObj.categories.navalForces, B: scoreBObj.categories.navalForces },
-      { category: "Economy", A: scoreAObj.categories.economy, B: scoreBObj.categories.economy },
-    ];
-    setRadarData(radar);
-  }
-}, [selected, weights, scenario]);
-
-const exportAsImage = async () => {
-  const element = document.querySelector(".radar-chart-container");
-  if (!element) return;
-  const canvas = await html2canvas(element, { scale: 2 });
-  const link = document.createElement("a");
-  link.href = canvas.toDataURL("image/png");
-  link.download = "military-comparison.png";
-  link.click();
-};
+const BRAVO_COLOR = "hsl(var(--chart-4))";
 
 const StatRow = ({
   label,
   valA,
   valB,
   format = "compact",
-  source,
+  metricKey,
 }: {
   label: string;
   valA: number | null | undefined;
   valB: number | null | undefined;
   format?: "compact" | "currency" | "number";
-  source?: string;
+  metricKey?: string;
 }) => {
   const isAWinner = (valA || 0) > (valB || 0);
   const isBWinner = (valB || 0) > (valA || 0);
@@ -104,10 +62,15 @@ const StatRow = ({
     format === "currency"
       ? formatCurrency(v)
       : formatCompact(v);
-  const desc = source ? METRIC_DESCRIPTIONS[source] : "";
+  
+  const desc = metricKey ? METRIC_DESCRIPTIONS[metricKey] : "";
+
   return (
     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4 py-2.5 border-b border-border/30 last:border-0 group hover:bg-primary/5 transition-colors px-2 -mx-2">
-      <div className="text-right font-mono text-xs sm:text-sm {isAWinner ? "text-primary font-bold" : "text-muted-foreground"}">
+      <div className={cn(
+        "text-right font-mono text-xs sm:text-sm",
+        isAWinner ? "text-primary font-bold" : "text-muted-foreground"
+      )}>
         {fmt(valA || 0)}
       </div>
       <div className="flex items-center justify-center gap-1.5 w-24 sm:w-40">
@@ -121,22 +84,16 @@ const StatRow = ({
                 <Info className="w-2.5 h-2.5 text-muted-foreground/20 group-hover:text-primary/40 cursor-help" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="font-mono text-[10px] uppercase tracking-wider">Source: {desc}</p>
+                <p className="font-mono text-[10px] uppercase tracking-wider">{desc}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         )}
-        {source && (
-          <div className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-sm bg-primary/60 border border-primary" />
-          </div>
-        )}
-        <div className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded-sm" style={{ background: BRAVO_COLOR }} />
-          <span className="text-xs text-muted-foreground font-mono">Bravo</span>
-        </div>
       </div>
-      <div className="text-left font-mono text-xs sm:text-sm {isBWinner ? "text-primary font-bold" : "text-muted-foreground"}">
+      <div className={cn(
+        "text-left font-mono text-xs sm:text-sm",
+        isBWinner ? "text-primary font-bold" : "text-muted-foreground"
+      )} style={isBWinner ? { color: BRAVO_COLOR } : {}}>
         {fmt(valB || 0)}
       </div>
     </div>
@@ -144,18 +101,55 @@ const StatRow = ({
 };
 
 export default function Index() {
-  const handleWeightChange = (field: keyof typeof weights, value: number) => {
-    const newWeights = { ...weights };
-    newWeights[field] = value / 100;
-    // Normalize so they still sum to 1    const total = Object.values(newWeights).reduce((a, b) => a + b, 0);
-    const normalized = {} as any;
-    Object.entries(newWeights).forEach(([k, v]) => {
-      normalized[k] = v / total;
+  const [selected, setSelected] = useState(["US", "CN"]);
+  const [scenario, setScenario] = useState<"full" | "air" | "naval" | "ground">("full");
+  const [weights, setWeights] = useState<Record<string, number>>(DEFAULT_WEIGHTS);
+  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+  const [filterValues, setFilterValues] = useState({
+    continent: "",
+    alliance: "",
+    region: "",
+  });
+
+  const filteredCountries = useMemo(() => {
+    return COUNTRIES_DATA.filter((c) => {
+      const f = filterValues;
+      return (
+        (f.continent ? c.continent === f.continent : true) &&
+        (f.alliance ? c.alliances.includes(f.alliance) : true) &&
+        (f.region ? c.region === f.region : true)
+      );
     });
-    setWeights(normalized);
+  }, [filterValues]);
+
+  const countryA = useMemo(() => COUNTRIES_DATA.find(c => c.code === selected[0]), [selected]);
+  const countryB = useMemo(() => COUNTRIES_DATA.find(c => c.code === selected[1]), [selected]);
+
+  const scores = useMemo(() => calculateScores(COUNTRIES_DATA), []);
+  const scoreA = useMemo(() => scores.find((s) => s.code === selected[0]), [scores, selected]);
+  const scoreB = useMemo(() => scores.find((s) => s.code === selected[1]), [scores, selected]);
+
+  const radarData = useMemo(() => {
+    if (!scoreA || !scoreB) return [];
+    return [
+      { category: "Manpower", A: scoreA.categories.manpower, B: scoreB.categories.manpower },
+      { category: "Air Power", A: scoreA.categories.airPower, B: scoreB.categories.airPower },
+      { category: "Ground", A: scoreA.categories.groundForces, B: scoreB.categories.groundForces },
+      { category: "Naval", A: scoreA.categories.navalForces, B: scoreB.categories.navalForces },
+      { category: "Economy", A: scoreA.categories.economy, B: scoreB.categories.economy },
+    ];
+  }, [scoreA, scoreB]);
+
+  const exportAsImage = async () => {
+    const element = document.querySelector(".radar-chart-container");
+    if (!element) return;
+    const canvas = await html2canvas(element as HTMLElement, { scale: 2, backgroundColor: null });
+    const link = document.createElement("a");
+    link.href = canvas.toDataURL("image/png");
+    link.download = "military-comparison.png";
+    link.click();
   };
 
-  const exportButtonLabel = "Export Diagram";
   return (
     <Layout>
       <div className="space-y-8">
@@ -181,93 +175,60 @@ export default function Index() {
               label="Force Alpha"
               value={selected[0]}
               onChange={(val) => setSelected([val, selected[1]])}
+              countries={filteredCountries}
               className="w-full sm:w-48 xl:w-56"
             />
             <CountrySelector
               label="Force Bravo"
               value={selected[1]}
               onChange={(val) => setSelected([selected[0], val])}
+              countries={filteredCountries}
               className="w-full sm:w-48 xl:w-56"
             />
           </div>
         </header>
 
-        {/* Filter Panel */}
-        <div className="lg:hidden">
-          <Button
-            variant="outline"
-            className="w-full flex justify-center items-center gap-2"
-            onClick={() => setFilterPanelOpen((o) => !o)}
-          >
-            <Info className="w-5 h-5" />
-            <span className="text-sm font-mono text-muted-foreground">Filters</span>
-          </Button>
-        </div>
-
-        {filterPanelOpen && (
-          <div className="hidden lg:block border border-border/50 bg-card/30 p-4 rounded-lg mb-6">
-            <h4 className="font-medium text-xs uppercase tracking-wider text-primary mb-2">
-              Filter Nations
-            </h4>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-primary/20" />
-                <label className="text-[9px] font-mono uppercase text-primary mr-1">Continent</label>
-                <Select>
-                  <SelectTrigger className="font-medium bg-background/50 h-10 rounded-none border border-border px-2.5 py-2.5 text-sm transition-colors">
-                    <SelectValue placeholder="All continents" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["North America", "Europe", "Asia", "Africa", "South America", "Oceania"].map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-primary/20" />
-                <label className="text-[9px] font-mono uppercase text-primary mr-1">Alliance</label>
-                <Select>
-                  <SelectTrigger className="font-medium bg-background/50 h-10 rounded-none border border-border px-2.5 py-2.5 text-sm transition-colors">
-                    <SelectValue placeholder="All alliances" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["NATO", "AUKUS", "SCO", "CSTO", "Five Eyes", "None"].map((a) => (
-                      <SelectItem key={a} value={a}>
-                        {a}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-primary/20" />
-                <label className="text-[9px] font-mono uppercase text-primary mr-1">Region</label>
-                <Select>
-                  <SelectTrigger className="font-medium bg-background/50 h-10 rounded-none border border-border px-2.5 py-2.5 text-sm transition-colors">
-                    <SelectValue placeholder="All regions" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["North America", "Europe", "Asia", "Africa", "South America", "Oceania"].map((r) => (
-                      <SelectItem key={r} value={r}>
-                        {r}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="mt-4 text-sm text-muted-foreground uppercase tracking-wider">
-              <span className="mr-2">Applied filters will limit the nation list used for comparison.</span>
-            </div>
-          </div>
-        )}
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* ... existing comparison cards ... */}
-          {/* Radar Chart Card */}
+          <div className="lg:col-span-2 space-y-8">
+            <Card className="border-border/50 bg-card/30">
+              <CardHeader className="border-b border-border/50 flex flex-row items-center justify-between">
+                <CardTitle className="text-xs font-mono uppercase tracking-widest">Detailed Metrics</CardTitle>
+                <div className="flex gap-2">
+                  <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
+                    <div className="w-2 h-2 bg-foreground" /> {countryA?.name}
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
+                    <div className="w-2 h-2 bg-primary" /> {countryB?.name}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2">Manpower</h3>
+                    <StatRow label="Active Personnel" valA={countryA?.metrics.activePersonnel} valB={countryB?.metrics.activePersonnel} metricKey="activePersonnel" />
+                    <StatRow label="Reserve Forces" valA={countryA?.metrics.reservePersonnel} valB={countryB?.metrics.reservePersonnel} metricKey="reservePersonnel" />
+                  </div>
+                  <div>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2">Air Power</h3>
+                    <StatRow label="Total Aircraft" valA={countryA?.metrics.aircraft} valB={countryB?.metrics.aircraft} metricKey="aircraft" />
+                    <StatRow label="Fighter Jets" valA={countryA?.metrics.fighterJets} valB={countryB?.metrics.fighterJets} metricKey="fighterJets" />
+                  </div>
+                  <div>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2">Naval Forces</h3>
+                    <StatRow label="Total Vessels" valA={countryA?.metrics.navalVessels} valB={countryB?.metrics.navalVessels} metricKey="navalVessels" />
+                    <StatRow label="Submarines" valA={countryA?.metrics.submarines} valB={countryB?.metrics.submarines} metricKey="submarines" />
+                  </div>
+                  <div>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2">Economy</h3>
+                    <StatRow label="Defense Budget" valA={countryA?.metrics.defenseBudgetUsd} valB={countryB?.metrics.defenseBudgetUsd} format="currency" metricKey="defenseBudgetUsd" />
+                    <StatRow label="GDP" valA={countryA?.metrics.gdpUsd} valB={countryB?.metrics.gdpUsd} format="currency" metricKey="gdpUsd" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="space-y-6">
             <Card className="border-primary/20 bg-primary/5 rounded-none relative overflow-hidden">
               <div className="absolute top-0 right-0 p-2 opacity-10">
@@ -279,12 +240,12 @@ export default function Index() {
               <CardContent className="space-y-8 relative z-10">
                 <div className="grid grid-cols-2 gap-2 items-end">
                   <div className="space-y-1 min-w-0">
-                    <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countries[0]?.name ?? "A"}</div>
+                    <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countryA?.name}</div>
                     <div className="text-2xl sm:text-3xl xl:text-4xl font-black font-mono leading-none truncate">{scoreA?.totalScore?.toFixed(2) ?? "0.00"}</div>
                   </div>
                   <div className="text-right space-y-1 min-w-0">
-                    <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countries[1]?.name ?? "B"}</div>
-                    <div className="text-2xl sm:text-3xl xl:text-4xl font-black font-mono text-primary leading-none truncate">{scoreB?.totalScore?.toFixed(2) ?? "0.00"}</div>
+                    <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countryB?.name}</div>
+                    <div className="text-2xl sm:text-3xl xl:text-4xl font-black font-mono text-primary leading-none truncate" style={{ color: BRAVO_COLOR }}>{scoreB?.totalScore?.toFixed(2) ?? "0.00"}</div>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -292,13 +253,14 @@ export default function Index() {
                     <div
                       className="bg-foreground h-full transition-all duration-500"
                       style={{
-                        width: `${(scoreA?.totalScore / (scoreA?.totalScore + scoreB?.totalScore)) * 100}%`,
+                        width: `${((scoreA?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
                       }}
                     />
                     <div
-                      className="bg-primary h-full transition-all duration-500"
+                      className="h-full transition-all duration-500"
                       style={{
-                        width: `${(scoreB?.totalScore / (scoreA?.totalScore + scoreB?.totalScore)) * 100}%`,
+                        width: `${((scoreB?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
+                        backgroundColor: BRAVO_COLOR
                       }}
                     />
                   </div>
@@ -310,7 +272,7 @@ export default function Index() {
               </CardContent>
             </Card>
 
-            <Card className="border-border/50 bg-card/30 rounded-none">
+            <Card className="border-border/50 bg-card/30 rounded-none radar-chart-container">
               <CardHeader className="bg-accent/5 border-b border-border/50">
                 <CardTitle className="text-xs font-mono uppercase tracking-wider">Capability Matrix</CardTitle>
               </CardHeader>
@@ -318,11 +280,12 @@ export default function Index() {
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart data={radarData}>
                     <PolarGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
-                    <PolarAngleAxis                      dataKey="category"
+                    <PolarAngleAxis
+                      dataKey="category"
                       tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10, fontFamily: "monospace", fontWeight: "bold" }}
                     />
-                    <Radar name={countries[0]?.name ?? "A"} dataKey="A" stroke="hsl(var(--foreground))" fill="hsl(var(--foreground))" fillOpacity={0.2} strokeWidth={2} />
-                    <Radar name={countries[1]?.name ?? "B"} dataKey="B" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} strokeWidth={2} />
+                    <Radar name={countryA?.name} dataKey="A" stroke="hsl(var(--foreground))" fill="hsl(var(--foreground))" fillOpacity={0.2} strokeWidth={2} />
+                    <Radar name={countryB?.name} dataKey="B" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} strokeWidth={2} />
                     <RechartsTooltip
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",
@@ -335,30 +298,20 @@ export default function Index() {
                     />
                   </RadarChart>
                 </ResponsiveContainer>
-                <div className="flex justify-center gap-6 mt-4">
-                  <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
-                    <div className="w-2 h-2 bg-foreground" />
-                    {countries[0]?.name ?? "A"}
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
-                    <div className="w-2 h-2 bg-primary" />
-                    {countries[1]?.name ?? "B"}
-                  </div>
-                </div>
               </CardContent>
             </Card>
-          </div>
-        </div>
 
-        {/* Export / Share Button */}
-        <div className="flex justify-end mt-4">
-          <Button            variant="outline"
-            className="px-4 py-2 bg-primary/20 text-primary hover:bg-primary/30"
-            onClick={exportAsImage}
-          >
-            {exportButtonLabel}
-            <Swords className="w-4 h-4 ml-1" />
-          </Button>
+            <div className="flex justify-end">
+              <Button
+                variant="outline"
+                className="px-4 py-2 bg-primary/20 text-primary hover:bg-primary/30 border-primary/30 font-mono text-xs uppercase tracking-widest"
+                onClick={exportAsImage}
+              >
+                Export Diagram
+                <Swords className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </Layout>

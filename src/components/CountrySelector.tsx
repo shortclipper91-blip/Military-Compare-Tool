@@ -15,7 +15,7 @@ interface CountrySelectorProps {
   exclude?: string[];
   className?: string;
   label?: string;
-  countries: any[]; // New prop
+  countries: any[];
 }
 
 export function CountrySelector({
@@ -126,7 +126,7 @@ export function CountrySelector({
                 </div>
               </div>
             </Command>
-          </Popover.Portal>
+          </Popover.Content>
         </Popover.Portal>
       </Popover.Root>
     </div>
