@@ -1,9 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom utility that was causing the error */
 @layer base {
-  /* Define the missing border-border utility so it can be used in other classes */
   .border-border {
-    @apply border border-2;
+    @apply border-2;
   }
 }
+
+/* Keep the original design variables */
 :root {
   --foreground: #ffffff;
   --card: #1a2235;
