@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { Layout } from "@/components/layout";
 import { FlagIcon } from "@/components/flag-icon";
 import { CountrySelector } from "@/components/CountrySelector";
@@ -30,14 +30,6 @@ import {
   Swords
 } from "lucide-react";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import html2canvas from "html2canvas";
 import METRIC_DESCRIPTIONS from "@/lib/metricDescriptions";
 import { cn } from "@/lib/utils";
 
@@ -102,9 +94,6 @@ const StatRow = ({
 
 export default function Index() {
   const [selected, setSelected] = useState(["US", "CN"]);
-  const [scenario, setScenario] = useState<"full" | "air" | "naval" | "ground">("full");
-  const [weights, setWeights] = useState<Record<string, number>>(DEFAULT_WEIGHTS);
-  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const [filterValues, setFilterValues] = useState({
     continent: "",
     alliance: "",
@@ -139,16 +128,6 @@ export default function Index() {
       { category: "Economy", A: scoreA.categories.economy, B: scoreB.categories.economy },
     ];
   }, [scoreA, scoreB]);
-
-  const exportAsImage = async () => {
-    const element = document.querySelector(".radar-chart-container");
-    if (!element) return;
-    const canvas = await html2canvas(element as HTMLElement, { scale: 2, backgroundColor: null });
-    const link = document.createElement("a");
-    link.href = canvas.toDataURL("image/png");
-    link.download = "military-comparison.png";
-    link.click();
-  };
 
   return (
     <Layout>
@@ -300,17 +279,6 @@ export default function Index() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-
-            <div className="flex justify-end">
-              <Button
-                variant="outline"
-                className="px-4 py-2 bg-primary/20 text-primary hover:bg-primary/30 border-primary/30 font-mono text-xs uppercase tracking-widest"
-                onClick={exportAsImage}
-              >
-                Export Diagram
-                <Swords className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
           </div>
         </div>
       </div>
