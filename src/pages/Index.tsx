@@ -342,16 +342,16 @@ export default function Index() {
                       dataKey="A" 
                       stroke="hsl(var(--foreground))" 
                       fill="hsl(var(--foreground))" 
-                      fillOpacity={0.3} 
-                      strokeWidth={3} 
+                      fillOpacity={0.4} 
+                      strokeWidth={4} 
                     />
                     <Radar 
                       name={countryB?.name} 
                       dataKey="B" 
                       stroke={BRAVO_COLOR} 
                       fill={BRAVO_COLOR} 
-                      fillOpacity={0.4} 
-                      strokeWidth={3} 
+                      fillOpacity={0.3} 
+                      strokeWidth={4} 
                     />
                     <RechartsTooltip
                       contentStyle={{
