@@ -8,7 +8,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@workspace/*': path.resolve(__dirname, 'lib/*/src')
     },
   },
 });
