@@ -5,7 +5,7 @@ import { Layout } from "@/components/layout";
 import { FlagIcon } from "@/components/flag-icon";
 import { CountrySelector } from "@/components/CountrySelector";
 import { COUNTRIES_DATA } from "@/lib/countryData";
-import { calculateScores, DEFAULT_WEIGHTS } from "@/lib/scoring";
+import { calculateScores } from "@/lib/scoring";
 import { formatCompact, formatCurrency, formatNumber } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,8 +34,9 @@ import METRIC_DESCRIPTIONS from "@/lib/metricDescriptions";
 import { cn } from "@/lib/utils";
 import "../extra.css";
 
-const BRAVO_COLOR = "hsl(var(--chart-4))";
-const PRIMARY_COLOR = "hsl(var(--primary))";
+// Use hardcoded colors that match our theme to guarantee visibility in the canvas
+const COLOR_ALPHA = "#ffd700"; // Gold
+const COLOR_BRAVO = "#ff9800"; // Orange
 
 const StatRow = ({
   label,
@@ -87,8 +88,8 @@ const StatRow = ({
       </div>
       <div className={cn(
         "text-left font-mono text-xs sm:text-sm",
-        isBWinner ? "text-primary font-bold" : "text-muted-foreground"
-      )} style={isBWinner ? { color: BRAVO_COLOR } : {}}>
+        isBWinner ? "font-bold" : "text-muted-foreground"
+      )} style={isBWinner ? { color: COLOR_BRAVO } : {}}>
         {fmt(valB || 0)}
       </div>
     </div>
@@ -193,7 +194,7 @@ export default function Index() {
                   </div>
                   <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
                     <FlagIcon code={countryB?.code || ""} size={16} />
-                    <span className={cn(isBWinner && "font-bold")} style={isBWinner ? { color: BRAVO_COLOR } : {}}>{countryB?.name}</span>
+                    <span className={cn(isBWinner && "font-bold")} style={isBWinner ? { color: COLOR_BRAVO } : {}}>{countryB?.name}</span>
                   </div>
                 </div>
               </CardHeader>
@@ -278,22 +279,23 @@ export default function Index() {
                     <div className={cn(
                       "text-2xl sm:text-3xl xl:text-4xl font-black font-mono leading-none truncate",
                       isBWinner ? "" : "text-muted-foreground"
-                    )} style={isBWinner ? { color: BRAVO_COLOR } : {}}>
+                    )} style={isBWinner ? { color: COLOR_BRAVO } : {}}>
                       {scoreB?.totalScore?.toFixed(2) ?? "0.00"}
                     </div>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div className="h-3 w-full bg-muted rounded-none overflow-hidden flex border border-border/50">
-                    <div className="bg-foreground h-full transition-all duration-500"
+                    <div className="bg-primary h-full transition-all duration-500"
                       style={{
                         width: `${((scoreA?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
+                        backgroundColor: COLOR_ALPHA
                       }}
                     />
                     <div className="h-full transition-all duration-500"
                       style={{
                         width: `${((scoreB?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
-                        backgroundColor: BRAVO_COLOR
+                        backgroundColor: COLOR_BRAVO
                       }}
                     />
                   </div>
@@ -312,11 +314,11 @@ export default function Index() {
               <CardContent className="h-[340px] pt-6">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart data={radarData}>
-                    <PolarGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
+                    <PolarGrid stroke="#263047" strokeDasharray="3 3" />
                     <PolarAngleAxis
                       dataKey="category"
                       tick={{
-                        fill: "white",
+                        fill: "#94a3b8",
                         fontSize: 10,
                         fontFamily: "monospace",
                         fontWeight: "bold",
@@ -325,23 +327,23 @@ export default function Index() {
                     <Radar 
                       name={countryA?.name} 
                       dataKey="A" 
-                      stroke={PRIMARY_COLOR} 
-                      fill={PRIMARY_COLOR} 
-                      fillOpacity={0.6} 
-                      strokeWidth={5} 
+                      stroke={COLOR_ALPHA} 
+                      fill={COLOR_ALPHA} 
+                      fillOpacity={0.5} 
+                      strokeWidth={3} 
                     />
                     <Radar 
                       name={countryB?.name} 
                       dataKey="B" 
-                      stroke={BRAVO_COLOR} 
-                      fill={BRAVO_COLOR} 
-                      fillOpacity={0.4} 
-                      strokeWidth={5} 
+                      stroke={COLOR_BRAVO} 
+                      fill={COLOR_BRAVO} 
+                      fillOpacity={0.3} 
+                      strokeWidth={3} 
                     />
                     <RechartsTooltip
                       contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
+                        backgroundColor: "#161b2b",
+                        border: "1px solid #263047",
                         color: "white",
                         fontSize: "12px",
                         fontFamily: "monospace",
