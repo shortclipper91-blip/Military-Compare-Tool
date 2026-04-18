@@ -51,9 +51,7 @@ function scoreToColor(score: number, isAdded: boolean): string {
   else baseColor = "#1e293b"; // dark for low
 
   // If the country has been added to the comparison, overlay a bright accent
-  return isAdded
-    ? `rgba(${baseColor.replace('#', '').split(',').map(v => parseInt(v)).join(',')}, 0.8)`
-    : baseColor;
+  return isAdded ? `rgba(${baseColor.replace('#', '').split(',').map(v => parseInt(v)).join(',')}, 0.8)` : baseColor;
 }
 
 const TIER_LABELS = [
@@ -72,13 +70,7 @@ function getTier(score: number) {
 
 export default function StrengthMap() {
   const { data: countries = [], isLoading } = useListCountries();
-  const [tooltip, setTooltip] = useState<{
-    name: string;
-    code: string;
-    score: number;
-    rank: number;
-    isAdded: boolean;
-  } | null>(null);
+  const [tooltip, setTooltip] = useState<{ name: string; code: string; score: number; rank: number; isAdded: boolean } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [center, setCenter] = useState<[number, number]>([0, 20]);
   const [selected, setSelected] = useState<string | null>(null);
@@ -130,9 +122,11 @@ export default function StrengthMap() {
           <div>
             <h1 className="text-xl font-bold font-mono tracking-tight text-foreground uppercase flex items-center gap-2">
               <MapIcon className="w-5 h-5 text-primary" />
-              Global Strength Index Map            </h1>
+              Global Strength Index Map
+            </h1>
             <p className="text-muted-foreground text-sm mt-0.5">
-              {scored.length} nations indexed · hover to inspect · click to lock            </p>
+              {scored.length} nations indexed · hover to inspect · click to lock
+            </p>
           </div>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => setZoom((z) => Math.min(z * 1.4, 8))}>
@@ -226,56 +220,51 @@ export default function StrengthMap() {
                       );
                     })}
                   </Geographies>
-                </ZoomableGroup>
-              </ComposableMap>
+                </Geographies>
+              </ZoomableGroup>
+            </ComposableMap>
 
-              {/* Legend & static hover index */}
-              <div className="absolute bottom-3 left-3 flex flex-col gap-1">
-                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Strength Index</div>
-                <div className="flex items-center gap-2">
-                  <div className="w-32 h-3 rounded-sm" style={{ background: "linear-gradient(to right, #1e2a3a, #8b2800, #f59e0b)" }} />
-                  <div className="flex justify-between w-32 text-[10px] font-mono text-muted-foreground -mt-3">
-                    <span>Low</span>
-                    <span>High</span>
-                  </div>
+            {/* Legend & static hover index */}
+            <div className="absolute bottom-3 left-3 flex flex-col gap-1">
+              <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Strength Index</div>
+              <div className="flex items-center gap-2">
+                <div className="w-32 h-3 rounded-sm" style={{ background: "linear-gradient(to right, #1e2a3a, #8b2800, #f59e0b)" }} />
+                <div className="flex justify-between w-32 text-[10px] font-mono text-muted-foreground -mt-3">
+                  <span>Low</span>
+                  <span>High</span>
                 </div>
               </div>
-
-              {/* Static hover index box – always visible above legend */}
-              {tooltip && (
-                <div className="absolute top-3 right-3 bg-card/95 border border-border rounded-md px-3 py-2 text-sm font-mono shadow-xl pointer-events-none">
-                  <div className="flex items-center gap-2">
-                    <FlagIcon code={tooltip.code} size={20} />
-                    <span className="font-bold text-foreground">{tooltip.name}</span>
-                  </div>
-                  <div className="text-muted-foreground text-xs mt-0.5">
-                    Rank <span className="text-primary">#{tooltip.rank}</span> · Score{" "}
-                    <span className="text-primary">{tooltip.score.toFixed(1)}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">{getTier(tooltip.score)}</div>
-                </div>
-              )}
-
-              {/* Tooltip on hover (only when not selected) */}
-              {tooltip && !selected && (
-                <div className="absolute top-3 right-3 bg-card/95 border border-border rounded-md px-3 py-2 text-sm font-mono shadow-xl pointer-events-none">
-                  <div className="font-bold text-foreground flex items-center gap-2">
-                    <FlagIcon code={tooltip.code} size={20} />
-                    {tooltip.name}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-0.5">
-                    Rank <span className="text-primary">#{tooltip.rank}</span> · Score{" "}
-                    <span className="text-primary">{tooltip.score.toFixed(1)}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">{getTier(tooltip.score)}</div>
-                </div>
-              )}
-            </Card>
-
-            {/* Rankings header – collapsible on mobile */}
-            <div className="flex flex-col gap-4">
-              {/* ... existing ranking UI ... */}
             </div>
+
+            {/* Static hover index box – always visible above legend */}
+            {tooltip && (
+              <div className="absolute top-3 right-3 bg-card/95 border border-border rounded-md px-3 py-2 text-sm font-mono shadow-xl pointer-events-none">
+                <div className="flex items-center gap-2">
+                  <FlagIcon code={tooltip.code} size={20} />
+                  <span className="font-bold text-foreground">{tooltip.name}</span>
+                </div>
+                <div className="text-muted-foreground text-xs mt-0.5">
+                  Rank <span className="text-primary">#{tooltip.rank}</span> · Score{" "}
+                  <span className="text-primary">{tooltip.score.toFixed(1)}</span>
+                </div>
+                <div className="text-xs text-muted-foreground">{getTier(tooltip.score)}</div>
+              </div>
+            )}
+
+            {/* Tooltip on hover (only when not selected) */}
+            {tooltip && !selected && (
+              <div className="absolute top-3 right-3 bg-card/95 border border-border rounded-md px-3 py-2 text-sm font-mono shadow-xl pointer-events-none">
+                <div className="font-bold text-foreground flex items-center gap-2">
+                  <FlagIcon code={tooltip.code} size={20} />
+                  {tooltip.name}
+                </div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  Rank <span className="text-primary">#{tooltip.rank}</span> · Score{" "}
+                  <span className="text-primary">{tooltip.score.toFixed(1)}</span>
+                </div>
+                <div className="text-xs text-muted-foreground">{getTier(tooltip.score)}</div>
+              </div>
+            )}
           </Card>
 
           <div className="flex flex-col gap-4">
