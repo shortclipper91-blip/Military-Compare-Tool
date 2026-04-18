@@ -136,6 +136,7 @@ export default function MapPage() {
                         />
                       );
                     })}
+                  </>
                 </Geographies>
               </ZoomableGroup>
             </ComposableMap>
