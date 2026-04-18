@@ -56,7 +56,8 @@ export function computeStrengthIndex(
       (country.metrics.navalVessels ?? 0) +
         (country.metrics.submarines ?? 0) * 2 +
         (country.metrics.aircraftCarriers ?? 0) * 10,
-      maxVals.naval    )
+      maxVals.naval
+    )
   );
 
   const budgetScore = clamp01(
@@ -82,4 +83,73 @@ export function scoreToColor(score: number): string {
   if (score <= 30) return "hsl(var(--muted))";
   if (score <= 70) return "hsl(var(--primary))";
   return "hsl(var(--primary))";
+}
+
+/**
+ * Calculate overall scores for a list of countries.
+ * Used by the head‑to‑head comparison view.
+ */
+export function calculateScores(
+  countries: Country[],
+  weights: CategoryWeights = DEFAULT_WEIGHTS
+): Array<{
+  code: string;
+  totalScore: number;
+  categories: Record<string, number>;
+}> {
+  // Determine max values for normalisation across the provided set
+  const maxVals = {
+    personnel: 0,
+    aircraft: 0,
+    naval: 0,
+    budget: 0,
+  };
+
+  countries.forEach(c => {
+    const p = (c.metrics.activePersonnel ?? 0) + (c.metrics.reservePersonnel ?? 0);
+    const a = c.metrics.aircraft ?? 0;
+    const n = (c.metrics.navalVessels ?? 0) +
+              (c.metrics.submarines ?? 0) * 2 +
+              (c.metrics.aircraftCarriers ?? 0) * 10;
+    const b = c.metrics.defenseBudgetUsd ?? 0;
+    maxVals.personnel = Math.max(maxVals.personnel, p);
+    maxVals.aircraft = Math.max(maxVals.aircraft, a);
+    maxVals.naval = Math.max(maxVals.naval, n);
+    maxVals.budget = Math.max(maxVals.budget, b);
+  });
+
+  return countries.map(c => {
+    const normalize = (value: number, max: number) => (max ? (value / max) * 100 : 0);
+
+    const manpowerScore = normalize(
+      (c.metrics.activePersonnel ?? 0) + (c.metrics.reservePersonnel ?? 0),
+      maxVals.personnel
+    );
+    const airScore = normalize(c.metrics.aircraft ?? 0, maxVals.aircraft);
+    const navalScore = normalize(
+      (c.metrics.navalVessels ?? 0) +
+        (c.metrics.submarines ?? 0) * 2 +
+        (c.metrics.aircraftCarriers ?? 0) * 10,
+      maxVals.naval    );
+    const economyScore = normalize(c.metrics.defenseBudgetUsd ?? 0, maxVals.budget);
+
+    const totalScore = (
+      manpowerScore * weights.manpower +
+      airScore * weights.airPower +
+      navalScore * weights.navalForces +
+      economyScore * weights.economy
+    );
+
+    return {
+      code: c.code,
+      totalScore,
+      categories: {
+        manpower: manpowerScore,
+        airPower: airScore,
+        groundForces: 0, // placeholder – not used in this simplified version
+        navalForces: 0,  // placeholder – not used in this simplified version        economy: economyScore,
+        logistics: 0,    // placeholder – not used in this simplified version
+      },
+    };
+  });
 }
