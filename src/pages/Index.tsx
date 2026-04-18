@@ -25,8 +25,7 @@ import {
   DollarSign, 
   Zap, 
   ArrowRightLeft, 
-  ShieldCheck, 
-  Info,
+  ShieldCheck,   Info,
   Database 
 } from "lucide-react";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -34,8 +33,8 @@ import METRIC_DESCRIPTIONS from "@/lib/metricDescriptions";
 import { cn } from "@/lib/utils";
 import "../extra.css";
 
-const BRAVO_COLOR = "hsl(var(--chart-4))";
-const PRIMARY_COLOR = "hsl(var(--primary))";
+const PRIMARY_COLOR = "#fbbf24"; // Amber 400 for higher score
+const BRAVO_COLOR = "#f59e0b";   // Amber 500 for lower score
 
 const StatRow = ({
   label,
@@ -244,8 +243,7 @@ export default function Index() {
 
                   <div>
                     <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
-                      <DollarSign className="w-3 h-3" /> Economy
-                    </h3>
+                      <DollarSign className="w-3 h-3" /> Economy                    </h3>
                     <StatRow label="Defense Budget" valA={countryA?.metrics.defenseBudgetUsd} valB={countryB?.metrics.defenseBudgetUsd} format="currency" metricKey="defenseBudgetUsd" />
                     <StatRow label="GDP" valA={countryA?.metrics.gdpUsd} valB={countryB?.metrics.gdpUsd} format="currency" metricKey="gdpUsd" />
                   </div>
@@ -312,7 +310,7 @@ export default function Index() {
               <CardContent className="h-[340px] pt-6">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart data={radarData}>
-                    <PolarGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
+                    <PolarGrid stroke="#263047" strokeDasharray="3 3" />
                     <PolarAngleAxis
                       dataKey="category"
                       tick={{
