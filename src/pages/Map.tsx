@@ -8,10 +8,11 @@ import { COUNTRIES_DATA } from "@/lib/countryData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Map as MapIcon, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { scoreToColor } from "@/lib/scoring";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-// Mapping ISO2 to Numeric IDs for the map
+// Mapping ISO2 → numeric ID for the low‑level map library
 const ISO2_TO_NUMERIC: Record<string, string> = {
   US: "840", RU: "643", CN: "156", IN: "356", GB: "826", FR: "250",
   DE: "276", JP: "392", KR: "410", TR: "792", PK: "586", IL: "376",
@@ -20,11 +21,10 @@ const ISO2_TO_NUMERIC: Record<string, string> = {
   ES: "724", MX: "484", DK: "208"
 };
 
-function getScoreColor(score: number) {
-  if (score > 80) return "#f59e0b"; // Elite
-  if (score > 50) return "#d97706"; // Major
-  if (score > 20) return "#92400e"; // Regional
-  return "#1e293b"; // Limited
+function getScoreColor(score: number): string {
+  // Low → muted gray, Mid → amber, High → gold  if (score <= 30) return "hsl(var(--muted))";
+  if (score <= 70) return "hsl(var(--primary))";
+  return "hsl(var(--primary))";
 }
 
 export default function MapPage() {
@@ -32,22 +32,38 @@ export default function MapPage() {
   const [center, setCenter] = useState<[number, number]>([0, 20]);
   const [hovered, setHovered] = useState<any>(null);
 
-  const countryScores = useMemo(() => {
-    const scores: Record<string, number> = {};
-    COUNTRIES_DATA.forEach(c => {
-      // Simple heuristic for the map visualization
-      const score = (
-        ((c.metrics.activePersonnel || 0) / 2000000) * 20 +
-        ((c.metrics.defenseBudgetUsd || 0) / 800e9) * 40 +
-        ((c.metrics.aircraft || 0) / 13000) * 20 +
-        ((c.metrics.nuclearWarheads || 0) > 0 ? 20 : 0)
-      );
-      const numericId = ISO2_TO_NUMERIC[c.code];
-      if (numericId) scores[numericId] = score;
-    });
-    return scores;
-  }, []);
+  // -----------------------------------------------------------------
+  // Compute a *consistent* strength index for every country.
+  // -----------------------------------------------------------------
+  const maxVals = {
+    personnel: 0,
+    aircraft: 0,
+    naval: 0,
+    budget: 0,
+  };
+  COUNTRIES_DATA.forEach(c => {
+    const p = (c.metrics.activePersonnel ?? 0) + (c.metrics.reservePersonnel ?? 0);
+    const a = c.metrics.aircraft ?? 0;
+    const n = (c.metrics.navalVessels ?? 0) +
+              (c.metrics.submarines ?? 0) * 2 +
+              (c.metrics.aircraftCarriers ?? 0) * 10;
+    const b = c.metrics.defenseBudgetUsd ?? 0;
+    maxVals.personnel = Math.max(maxVals.personnel, p);
+    maxVals.aircraft = Math.max(maxVals.aircraft, a);
+    maxVals.naval = Math.max(maxVals.naval, n);
+    maxVals.budget = Math.max(maxVals.budget, b);
+  });
 
+  const countryScores: Record<string, number> = {};
+  COUNTRIES_DATA.forEach(c => {
+    const { score } = (require("@/lib/scoring") as any).computeStrengthIndex(c, maxVals);
+    const numericId = ISO2_TO_NUMERIC[c.code];
+    if (numericId) countryScores[numericId] = score;
+  });
+
+  // -----------------------------------------------------------------
+  // Render
+  // -----------------------------------------------------------------
   return (
     <Layout>
       <div className="space-y-6">
@@ -55,9 +71,10 @@ export default function MapPage() {
           <div>
             <h1 className="text-3xl font-black tracking-tighter uppercase italic flex items-center gap-3">
               <MapIcon className="w-8 h-8 text-primary" />
-              Global Strength Index
-            </h1>
-            <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest">Geospatial Force Distribution</p>
+              Global Strength Index            </h1>
+            <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest">
+              Geospatial Force Distribution
+            </p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="icon" onClick={() => setZoom(z => Math.min(z * 1.5, 8))}><ZoomIn className="w-4 h-4" /></Button>
@@ -67,6 +84,7 @@ export default function MapPage() {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Main map visualisation */}
           <Card className="lg:col-span-3 border-border/50 bg-card/30 backdrop-blur-sm overflow-hidden relative min-h-[500px]">
             <ComposableMap projectionConfig={{ scale: 140 }}>
               <ZoomableGroup
@@ -80,32 +98,50 @@ export default function MapPage() {
                 <Geographies geography={GEO_URL}>
                   {({ geographies }) =>
                     geographies.map((geo) => {
-                      const score = countryScores[geo.id] || 0;
+                      const score = countryScores[geo.id] ?? 0; // fallback for unknown countries
                       return (
                         <Geography
                           key={geo.rsmKey}
                           geography={geo}
                           onMouseEnter={() => {
-                            const code = Object.keys(ISO2_TO_NUMERIC).find(key => ISO2_TO_NUMERIC[key] === geo.id);
-                            if (code) {
-                              const country = COUNTRIES_DATA.find(c => c.code === code);
-                              setHovered({ name: country?.name, score, code });
+                            const iso = Object.keys(ISO2_TO_NUMERIC).find(k => ISO2_TO_NUMERIC[k] === geo.id);
+                            if (iso) {
+                              const country = COUNTRIES_DATA.find(c => c.code === iso);
+                              setHovered({
+                                name: country?.name,
+                                score,
+                                code: iso,
+                                colour: scoreToColor(score),
+                              });
                             }
                           }}
                           onMouseLeave={() => setHovered(null)}
                           style={{
-                            default: { fill: getScoreColor(score), outline: "none", stroke: "#0f172a", strokeWidth: 0.5 },
-                            hover: { fill: "#fbbf24", outline: "none", cursor: "pointer" },
-                            pressed: { fill: "#f59e0b", outline: "none" },
+                            default: {
+                              fill: scoreToColor(score),
+                              outline: "none",
+                              stroke: "#0f172a",
+                              strokeWidth: 0.5,
+                            },
+                            hover: {
+                              fill: "#fbbf24",
+                              outline: "none",
+                              cursor: "pointer",
+                            },
+                            pressed: {
+                              fill: "#f59e0b",
+                              outline: "none",
+                            },
                           }}
                         />
                       );
-                    })
-                  }
+                    })}
+                  </>
                 </Geographies>
               </ZoomableGroup>
             </ComposableMap>
 
+            {/* Tooltip / info card that appears on hover */}
             {hovered && (
               <div className="absolute bottom-4 right-4 bg-card/90 border border-primary/20 p-4 rounded-lg shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-2">
                 <div className="flex items-center gap-3 mb-2">
@@ -114,39 +150,47 @@ export default function MapPage() {
                 </div>
                 <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Strength Index</div>
                 <div className="text-2xl font-black font-mono text-primary">{hovered.score.toFixed(1)}</div>
+                <div className="text-[10px] font-mono text-muted-foreground">
+                  {scoreToColor(hovered.score)} – colour based on strength tier
+                </div>
               </div>
             )}
-          </Card>
 
-          <Card className="border-border/50 bg-card/30">
-            <CardHeader>
-              <CardTitle className="text-xs font-mono uppercase tracking-widest">Legend</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-[#f59e0b] rounded-sm" />
-                  <span className="text-[10px] font-mono uppercase">Tier 1 (Global Power)</span>
+            {/* Legend – now includes a “Not Added” tier */}
+            <Card className="border-border/50 bg-card/30">
+              <CardHeader>
+                <CardTitle className="text-xs font-mono uppercase tracking-widest">Legend</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-[#f59e0b] rounded-sm" /> {/* Elite */}
+                    <span className="text-[10px] font-mono uppercase">Tier 1 (Global Power)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-[#d97706] rounded-sm" /> {/* Major */}
+                    <span className="text-[10px] font-mono uppercase">Tier 2 (Major Regional)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-[#92400e] rounded-sm" /> {/* Regional */}
+                    <span className="text-[10px] font-mono uppercase">Tier 3 (Regional)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-[#1e293b] rounded-sm" /> {/* Limited */}
+                    <span className="text-[10px] font-mono uppercase">Tier 4 (Limited)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "hsl(var(--border))" }} />
+                    <span className="text-[10px] font-mono uppercase">Not Added</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-[#d97706] rounded-sm" />
-                  <span className="text-[10px] font-mono uppercase">Tier 2 (Major Regional)</span>
+                <div className="pt-4 border-t border-border/50">
+                  <p className="text-[10px] text-muted-foreground leading-relaxed italic">
+                    Index calculated from personnel, budget, airframes, and strategic deterrents.
+                  </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-[#92400e] rounded-sm" />
-                  <span className="text-[10px] font-mono uppercase">Tier 3 (Regional)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-[#1e293b] rounded-sm" />
-                  <span className="text-[10px] font-mono uppercase">{"Tier 4 (<20 Index)"}</span>
-                </div>
-              </div>
-              <div className="pt-4 border-t border-border/50">
-                <p className="text-[10px] text-muted-foreground leading-relaxed italic">
-                  Index calculated based on aggregate personnel, budget, airframes, and strategic deterrents.
-                </p>
-              </div>
-            </CardContent>
+              </CardContent>
+            </Card>
           </Card>
         </div>
       </div>
