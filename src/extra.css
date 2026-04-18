@@ -1,15 +1,15 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Use @reference to pull in Tailwind's theme without duplicating CSS output */
+@reference "tailwindcss";
 
-/* Custom utility that was causing the error */
 @layer base {
-  .border-border {
-    @apply border-2;
+  /* Set global border styles using standard CSS properties to avoid @apply resolution errors */
+  * {
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--border, #263047);
   }
 }
 
-/* Keep the original design variables */
 :root {
   --foreground: #ffffff;
   --card: #1a2235;
@@ -18,11 +18,11 @@
   --chart-4: #ff9800;
   --muted-foreground: #d1d5db;
 }
+
 @layer base {
-  * {
-    @apply border-border;
-  }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   }
 }

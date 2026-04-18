@@ -17,15 +17,25 @@ import {
   ResponsiveContainer,
   Tooltip as RechartsTooltip,
 } from "recharts";
-import { Users, Plane, Target, Anchor, DollarSign, Zap, ArrowRightLeft, ShieldCheck, Info } from "lucide-react";
+import { 
+  Users, 
+  Plane, 
+  Target, 
+  Anchor, 
+  DollarSign, 
+  Zap, 
+  ArrowRightLeft, 
+  ShieldCheck, 
+  Info,
+  Database 
+} from "lucide-react";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import METRIC_DESCRIPTIONS from "@/lib/metricDescriptions";
 import { cn } from "@/lib/utils";
-import "../extra.css"; // Corrected import path
+import "../extra.css";
 
 const BRAVO_COLOR = "hsl(var(--chart-4))";
 const PRIMARY_COLOR = "hsl(var(--primary))";
-const FOREGROUND_COLOR = "hsl(var(--foreground))";
 
 const StatRow = ({
   label,
@@ -87,22 +97,6 @@ const StatRow = ({
 
 export default function Index() {
   const [selected, setSelected] = useState(["US", "CN"]);
-  const [filterValues, setFilterValues] = useState({
-    continent: "",
-    alliance: "",
-    region: "",
-  });
-
-  const filteredCountries = useMemo(() => {
-    return COUNTRIES_DATA.filter((c) => {
-      const f = filterValues;
-      return (
-        (f.continent ? c.continent === f.continent : true) &&
-        (f.alliance ? c.alliances.includes(f.alliance) : true) &&
-        (f.region ? c.region === f.region : true)
-      );
-    });
-  }, [filterValues]);
 
   const countryA = useMemo(() => COUNTRIES_DATA.find(c => c.code === selected[0]), [selected]);
   const countryB = useMemo(() => COUNTRIES_DATA.find(c => c.code === selected[1]), [selected]);
@@ -135,14 +129,14 @@ export default function Index() {
               <span className="text-[10px] font-mono uppercase tracking-[0.3em]">Operational Status: Active</span>
             </div>
             <h1 className="text-3xl sm:text-4xl xl:text-5xl font-black tracking-tighter uppercase italic">Strategic Assessment</h1>
-            <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest opacity-70">Head-to‑Head Force Comparison Matrix</p>
+            <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest opacity-70">Head-to-Head Force Comparison Matrix</p>
           </div>
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3 w-full lg:w-auto bg-card/50 p-3 border border-border/50 backdrop-blur-sm">
             <CountrySelector
               label="Force Alpha"
               value={selected[0]}
               onChange={(val) => setSelected([val, selected[1]])}
-              countries={filteredCountries}
+              countries={COUNTRIES_DATA}
               className="w-full sm:w-48 xl:w-56"
             />
             <div className="flex items-center justify-center pb-1">
@@ -159,7 +153,7 @@ export default function Index() {
               label="Force Bravo"
               value={selected[1]}
               onChange={(val) => setSelected([selected[0], val])}
-              countries={filteredCountries}
+              countries={COUNTRIES_DATA}
               className="w-full sm:w-48 xl:w-56"
             />
           </div>
@@ -181,12 +175,11 @@ export default function Index() {
                       <TooltipContent className="bg-card border-border p-3">
                         <div className="space-y-2">
                           <p className="text-[10px] font-mono uppercase tracking-widest text-primary border-b border-primary/20 pb-1">Intelligence Sources</p>
-                          <ul className="space-y-1">
-                            <li className="text-[9px] font-mono uppercase text-muted-foreground">• IISS Military Balance 2024</li>
-                            <li className="text-[9px] font-mono uppercase text-muted-foreground">• SIPRI Arms Transfers Database</li>
-                            <li className="text-[9px] font-mono uppercase text-muted-foreground">• Global Firepower Index 2024</li>
-                            <li className="text-[9px] font-mono uppercase text-muted-foreground">• FAS Nuclear Notebook 2023</li>
-                            <li className="text-[9px] font-mono uppercase text-muted-foreground">• World Bank Economic Data</li>
+                          <ul className="space-y-1 text-muted-foreground text-[9px] font-mono uppercase">
+                            <li>• IISS Military Balance 2024</li>
+                            <li>• SIPRI Arms Transfers Database</li>
+                            <li>• Global Firepower Index 2024</li>
+                            <li>• FAS Nuclear Notebook 2023</li>
                           </ul>
                         </div>
                       </TooltipContent>
@@ -214,7 +207,8 @@ export default function Index() {
                     <StatRow label="Reserve Forces" valA={countryA?.metrics.reservePersonnel} valB={countryB?.metrics.reservePersonnel} metricKey="reservePersonnel" />
                     <StatRow label="Paramilitary" valA={countryA?.metrics.paramilitary} valB={countryB?.metrics.paramilitary} metricKey="paramilitary" />
                   </div>
-                                   <div>
+
+                  <div>
                     <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
                       <Plane className="w-3 h-3" /> Air Power
                     </h3>
@@ -230,7 +224,6 @@ export default function Index() {
                     <StatRow label="Main Battle Tanks" valA={countryA?.metrics.tanks} valB={countryB?.metrics.tanks} metricKey="tanks" />
                     <StatRow label="Armored Vehicles" valA={countryA?.metrics.armoredVehicles} valB={countryB?.metrics.armoredVehicles} metricKey="armoredVehicles" />
                     <StatRow label="Artillery Units" valA={countryA?.metrics.selfPropelledArtillery} valB={countryB?.metrics.selfPropelledArtillery} metricKey="selfPropelledArtillery" />
-                    <StatRow label="Rocket Projectors" valA={countryA?.metrics.rocketProjectors} valB={countryB?.metrics.rocketProjectors} metricKey="rocketProjectors" />
                   </div>
 
                   <div>
@@ -240,7 +233,6 @@ export default function Index() {
                     <StatRow label="Total Vessels" valA={countryA?.metrics.navalVessels} valB={countryB?.metrics.navalVessels} metricKey="navalVessels" />
                     <StatRow label="Submarines" valA={countryA?.metrics.submarines} valB={countryB?.metrics.submarines} metricKey="submarines" />
                     <StatRow label="Destroyers" valA={countryA?.metrics.destroyers} valB={countryB?.metrics.destroyers} metricKey="destroyers" />
-                    <StatRow label="Aircraft Carriers" valA={countryA?.metrics.aircraftCarriers} valB={countryB?.metrics.aircraftCarriers} metricKey="aircraftCarriers" />
                   </div>
 
                   <div>
@@ -252,7 +244,8 @@ export default function Index() {
 
                   <div>
                     <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
-                      <DollarSign className="w-3 h-3" /> Economy                    </h3>
+                      <DollarSign className="w-3 h-3" /> Economy
+                    </h3>
                     <StatRow label="Defense Budget" valA={countryA?.metrics.defenseBudgetUsd} valB={countryB?.metrics.defenseBudgetUsd} format="currency" metricKey="defenseBudgetUsd" />
                     <StatRow label="GDP" valA={countryA?.metrics.gdpUsd} valB={countryB?.metrics.gdpUsd} format="currency" metricKey="gdpUsd" />
                   </div>
@@ -292,13 +285,12 @@ export default function Index() {
                 </div>
                 <div className="space-y-2">
                   <div className="h-3 w-full bg-muted rounded-none overflow-hidden flex border border-border/50">
-                    <div                      className="bg-foreground h-full transition-all duration-500"
+                    <div className="bg-foreground h-full transition-all duration-500"
                       style={{
                         width: `${((scoreA?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
                       }}
                     />
-                    <div
-                      className="h-full transition-all duration-500"
+                    <div className="h-full transition-all duration-500"
                       style={{
                         width: `${((scoreB?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
                         backgroundColor: BRAVO_COLOR
@@ -324,7 +316,7 @@ export default function Index() {
                     <PolarAngleAxis
                       dataKey="category"
                       tick={{
-                        fill: "white", // Force white text for axis labels
+                        fill: "white",
                         fontSize: 10,
                         fontFamily: "monospace",
                         fontWeight: "bold",
@@ -340,7 +332,8 @@ export default function Index() {
                     />
                     <Radar 
                       name={countryB?.name} 
-                      dataKey="B"                       stroke={BRAVO_COLOR} 
+                      dataKey="B" 
+                      stroke={BRAVO_COLOR} 
                       fill={BRAVO_COLOR} 
                       fillOpacity={0.4} 
                       strokeWidth={5} 
@@ -349,7 +342,7 @@ export default function Index() {
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",
                         border: "1px solid hsl(var(--border))",
-                        color: "white", // Force white text in tooltip
+                        color: "white",
                         fontSize: "12px",
                         fontFamily: "monospace",
                         borderRadius: "0px",
