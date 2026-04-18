@@ -5,7 +5,7 @@ import { Layout } from "@/components/layout";
 import { FlagIcon } from "@/components/flag-icon";
 import { CountrySelector } from "@/components/CountrySelector";
 import { COUNTRIES_DATA } from "@/lib/countryData";
-import { calculateScores, computeStrengthIndex, scoreToColor } from "@/lib/scoring";
+import { calculateScores, scoreToColor } from "@/lib/scoring";
 import { formatCompact, formatCurrency, formatNumber } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,10 +23,12 @@ import {
   Target, 
   Anchor, 
   DollarSign, 
-  Zap,   ArrowRightLeft, 
+  Zap, 
+  ArrowRightLeft, 
   ShieldCheck, 
   Info,
-  Database } from "lucide-react";
+  Database 
+} from "lucide-react";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import METRIC_DESCRIPTIONS from "@/lib/metricDescriptions";
 import { cn } from "@/lib/utils";
@@ -96,73 +98,38 @@ const StatRow = ({
 export default function Index() {
   const [selected, setSelected] = useState(["US", "CN"]);
 
-  // -----------------------------------------------------------------
-  // 1️⃣  Compute a *consistent* strength index for every country.
-  // -----------------------------------------------------------------
-  const maxVals = {
-    personnel: 0,
-    aircraft: 0,
-    naval: 0,
-    budget: 0,
-  };
-  COUNTRIES_DATA.forEach(c => {
-    const p = (c.metrics.activePersonnel ?? 0) + (c.metrics.reservePersonnel ?? 0);
-    const a = c.metrics.aircraft ?? 0;
-    const n = (c.metrics.navalVessels ?? 0) +
-              (c.metrics.submarines ?? 0) * 2 +
-              (c.metrics.aircraftCarriers ?? 0) * 10;
-    const b = c.metrics.defenseBudgetUsd ?? 0;
-    maxVals.personnel = Math.max(maxVals.personnel, p);
-    maxVals.aircraft = Math.max(maxVals.aircraft, a);
-    maxVals.naval = Math.max(maxVals.naval, n);
-    maxVals.budget = Math.max(maxVals.budget, b);
-  });
+  const countryA = useMemo(() => COUNTRIES_DATA.find(c => c.code === selected[0]), [selected]);
+  const countryB = useMemo(() => COUNTRIES_DATA.find(c => c.code === selected[1]), [selected]);
 
-  const indexed = COUNTRIES_DATA.map(c => {
-    const { score } = computeStrengthIndex(c, maxVals);
-    return { ...c, strengthScore: score };
-  });
+  const scores = useMemo(() => calculateScores(COUNTRIES_DATA), []);
+  const scoreA = useMemo(() => scores.find((s) => s.code === selected[0]), [scores, selected]);
+  const scoreB = useMemo(() => scores.find((s) => s.code === selected[1]), [scores, selected]);
 
-  const scoreA = useMemo(() => {
-    return indexed.find(c => c.code === selected[0]);
-  }, [selected, indexed]);
-  const scoreB = useMemo(() => {
-    return indexed.find(c => c.code === selected[1]);
-  }, [selected, indexed]);
+  const isAWinner = (scoreA?.totalScore || 0) > (scoreB?.totalScore || 0);
+  const isBWinner = (scoreB?.totalScore || 0) > (scoreA?.totalScore || 0);
 
-  // -----------------------------------------------------------------
-  // 2️⃣  Radar‑chart data (category breakdown)
-  // -----------------------------------------------------------------
   const radarData = useMemo(() => {
     if (!scoreA || !scoreB) return [];
     return [
-      { category: "Manpower", A: scoreA.strengthScore, B: scoreB.strengthScore },
-      { category: "Air Power", A: scoreA?.categories?.airPower ?? 0, B: scoreB?.categories?.airPower ?? 0 },
-      { category: "Ground", A: scoreA?.categories?.groundForces ?? 0, B: scoreB?.categories?.groundForces ?? 0 },
-      { category: "Naval", A: scoreA?.categories?.navalForces ?? 0, B: scoreB?.categories?.navalForces ?? 0 },
-      { category: "Economy", A: scoreA?.categories?.economy ?? 0, B: scoreB?.categories?.economy ?? 0 },
+      { category: "Manpower", A: scoreA.categories.manpower, B: scoreB.categories.manpower },
+      { category: "Air Power", A: scoreA.categories.airPower, B: scoreB.categories.airPower },
+      { category: "Ground", A: scoreA.categories.groundForces, B: scoreB.categories.groundForces },
+      { category: "Naval", A: scoreA.categories.navalForces, B: scoreB.categories.navalForces },
+      { category: "Economy", A: scoreA.categories.economy, B: scoreB.categories.economy },
     ];
   }, [scoreA, scoreB]);
 
-  // -----------------------------------------------------------------
-  // 3️⃣  Render
-  // -----------------------------------------------------------------
   return (
     <Layout>
       <div className="space-y-8">
-        {/* Header – unchanged */}
         <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-primary mb-1">
               <ShieldCheck className="w-5 h-5" />
               <span className="text-[10px] font-mono uppercase tracking-[0.3em]">Operational Status: Active</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl xl:text-5xl font-black tracking-tighter uppercase italic">
-              Strategic Assessment
-            </h1>
-            <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest opacity-70">
-              Head‑to‑Head Force Comparison Matrix
-            </p>
+            <h1 className="text-3xl sm:text-4xl xl:text-5xl font-black tracking-tighter uppercase italic">Strategic Assessment</h1>
+            <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest opacity-70">Head-to-Head Force Comparison Matrix</p>
           </div>
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3 w-full lg:w-auto bg-card/50 p-3 border border-border/50 backdrop-blur-sm">
             <CountrySelector
@@ -192,9 +159,7 @@ export default function Index() {
           </div>
         </header>
 
-        {/* Main comparison cards */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left column – detailed metrics */}
           <div className="lg:col-span-2 space-y-8">
             <Card className="border-border/50 bg-card/30">
               <CardHeader className="border-b border-border/50 flex flex-row items-center justify-between">
@@ -223,66 +188,73 @@ export default function Index() {
                 </div>
                 <div className="flex gap-6">
                   <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
-                    <FlagIcon code={scoreA?.code ?? ""} size={16} />
-                    <span className={cn(isAWinner && "text-primary font-bold")}>{scoreA?.name}</span>
+                    <FlagIcon code={countryA?.code || ""} size={16} />
+                    <span className={cn(isAWinner && "text-primary font-bold")}>{countryA?.name}</span>
                   </div>
                   <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
-                    <FlagIcon code={scoreB?.code ?? ""} size={16} />
-                    <span className={cn(isBWinner && "font-bold")} style={isBWinner ? { color: BRAVO_COLOR } : {}}>
-                      {scoreB?.name}
-                    </span>
+                    <FlagIcon code={countryB?.code || ""} size={16} />
+                    <span className={cn(isBWinner && "font-bold")} style={isBWinner ? { color: BRAVO_COLOR } : {}}>{countryB?.name}</span>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="p-6">
-                {/* Metric rows – unchanged except we now use the consistent strengthScore */}
-                <div>
-                  <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
-                    <Users className="w-3 h-3" /> Manpower
-                  </h3>
-                  <StatRow label="Active Personnel" valA={scoreA?.metrics.activePersonnel} valB={scoreB?.metrics.activePersonnel} metricKey="activePersonnel" />
-                  <StatRow label="Reserve Forces" valA={scoreA?.metrics.reservePersonnel} valB={scoreB?.metrics.reservePersonnel} metricKey="reservePersonnel" />
-                  <StatRow label="Paramilitary" valA={scoreA?.metrics.paramilitary} valB={scoreB?.metrics.paramilitary} metricKey="paramilitary" />
-                </div>
+                <div className="space-y-8">
+                  <div>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                      <Users className="w-3 h-3" /> Manpower
+                    </h3>
+                    <StatRow label="Active Personnel" valA={countryA?.metrics.activePersonnel} valB={countryB?.metrics.activePersonnel} metricKey="activePersonnel" />
+                    <StatRow label="Reserve Forces" valA={countryA?.metrics.reservePersonnel} valB={countryB?.metrics.reservePersonnel} metricKey="reservePersonnel" />
+                    <StatRow label="Paramilitary" valA={countryA?.metrics.paramilitary} valB={countryB?.metrics.paramilitary} metricKey="paramilitary" />
+                  </div>
 
-                <div>
-                  <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
-                    <Plane className="w-3 h-3" /> Air Power
-                  </h3>
-                  <StatRow label="Total Aircraft" valA={scoreA?.metrics.aircraft} valB={scoreB?.metrics.aircraft} metricKey="aircraft" />
-                  <StatRow label="Fighter Jets" valA={scoreA?.metrics.fighterJets} valB={scoreB?.metrics.fighterJets} metricKey="fighterJets" />
-                  <StatRow label="Attack Helicopters" valA={scoreA?.metrics.attackHelicopters} valB={scoreB?.metrics.attackHelicopters} metricKey="attackHelicopters" />
-                </div>
+                  <div>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                      <Plane className="w-3 h-3" /> Air Power
+                    </h3>
+                    <StatRow label="Total Aircraft" valA={countryA?.metrics.aircraft} valB={countryB?.metrics.aircraft} metricKey="aircraft" />
+                    <StatRow label="Fighter Jets" valA={countryA?.metrics.fighterJets} valB={countryB?.metrics.fighterJets} metricKey="fighterJets" />
+                    <StatRow label="Attack Helicopters" valA={countryA?.metrics.attackHelicopters} valB={countryB?.metrics.attackHelicopters} metricKey="attackHelicopters" />
+                  </div>
 
-                <div>
-                  <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
-                    <Target className="w-3 h-3" /> Ground Forces
-                  </h3>
-                  <StatRow label="Main Battle Tanks" valA={scoreA?.metrics.tanks} valB={scoreB?.metrics.tanks} metricKey="tanks" />
-                  <StatRow label="Armored Vehicles" valA={scoreA?.metrics.armoredVehicles} valB={scoreB?.metrics.armoredVehicles} metricKey="armoredVehicles" />
-                  <StatRow label="Artillery Units" valA={scoreA?.metrics.selfPropelledArtillery} valB={scoreB?.metrics.selfPropelledArtillery} metricKey="selfPropelledArtillery" />
-                </div>
+                  <div>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                      <Target className="w-3 h-3" /> Ground Forces
+                    </h3>
+                    <StatRow label="Main Battle Tanks" valA={countryA?.metrics.tanks} valB={countryB?.metrics.tanks} metricKey="tanks" />
+                    <StatRow label="Armored Vehicles" valA={countryA?.metrics.armoredVehicles} valB={countryB?.metrics.armoredVehicles} metricKey="armoredVehicles" />
+                    <StatRow label="Artillery Units" valA={countryA?.metrics.selfPropelledArtillery} valB={countryB?.metrics.selfPropelledArtillery} metricKey="selfPropelledArtillery" />
+                  </div>
 
-                <div>
-                  <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
-                    <Anchor className="w-3 h-3" /> Naval Forces
-                  </h3>
-                  <StatRow label="Total Vessels" valA={scoreA?.metrics.navalVessels} valB={scoreB?.metrics.navalVessels} metricKey="navalVessels" />
-                  <StatRow label="Submarines" valA={scoreA?.metrics.submarines} valB={scoreB?.metrics.submarines} metricKey="submarines" />
-                  <StatRow label="Destroyers" valA={scoreA?.metrics.destroyers} valB={scoreB?.metrics.destroyers} metricKey="destroyers" />
-                  <StatRow label="Frigates" valA={scoreA?.metrics.frigates} valB={scoreB?.metrics.frigates} metricKey="frigates" />
-                  <StatRow label="Aircraft Carriers" valA={scoreA?.metrics.aircraftCarriers} valB={scoreB?.metrics.aircraftCarriers} metricKey="aircraftCarriers" />
-                  <StatRow label="Nuclear Warheads" valA={scoreA?.metrics.nuclearWarheads} valB={scoreB?.metrics.nuclearWarheads} metricKey="nuclearWarheads" format="number" />
-                  <StatRow label="Defense Budget" valA={scoreA?.metrics.defenseBudgetUsd} valB={scoreB?.metrics.defenseBudgetUsd} format="currency" metricKey="defenseBudgetUsd" />
-                  <StatRow label="GDP" valA={scoreA?.metrics.gdpUsd} valB={scoreB?.metrics.gdpUsd} format="currency" metricKey="gdpUsd" />
+                  <div>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                      <Anchor className="w-3 h-3" /> Naval Forces
+                    </h3>
+                    <StatRow label="Total Vessels" valA={countryA?.metrics.navalVessels} valB={countryB?.metrics.navalVessels} metricKey="navalVessels" />
+                    <StatRow label="Submarines" valA={countryA?.metrics.submarines} valB={countryB?.metrics.submarines} metricKey="submarines" />
+                    <StatRow label="Destroyers" valA={countryA?.metrics.destroyers} valB={countryB?.metrics.destroyers} metricKey="destroyers" />
+                  </div>
+
+                  <div>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                      <Zap className="w-3 h-3" /> Strategic
+                    </h3>
+                    <StatRow label="Nuclear Warheads" valA={countryA?.metrics.nuclearWarheads} valB={countryB?.metrics.nuclearWarheads} metricKey="nuclearWarheads" format="number" />
+                  </div>
+
+                  <div>
+                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                      <DollarSign className="w-3 h-3" /> Economy
+                    </h3>
+                    <StatRow label="Defense Budget" valA={countryA?.metrics.defenseBudgetUsd} valB={countryB?.metrics.defenseBudgetUsd} format="currency" metricKey="defenseBudgetUsd" />
+                    <StatRow label="GDP" valA={countryA?.metrics.gdpUsd} valB={countryB?.metrics.gdpUsd} format="currency" metricKey="gdpUsd" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Right column – index bar + radar chart */}
           <div className="space-y-6">
-            {/* Strength‑Index bar – now coloured properly */}
             <Card className="border-primary/20 bg-primary/5 rounded-none relative overflow-hidden">
               <div className="absolute top-0 right-0 p-2 opacity-10">
                 <ShieldCheck className="w-24 h-24" />
@@ -293,37 +265,35 @@ export default function Index() {
               <CardContent className="space-y-8 relative z-10">
                 <div className="grid grid-cols-2 gap-2 items-end">
                   <div className="space-y-1 min-w-0">
-                    <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{scoreA?.name}</div>
+                    <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countryA?.name}</div>
                     <div className={cn(
                       "text-2xl sm:text-3xl xl:text-4xl font-black font-mono leading-none truncate",
-                      isAWinner ? "text-foreground" : "text-muted-foreground"
+                      isAWinner ? "text-primary" : "text-muted-foreground"
                     )}>
-                      {scoreA?.strengthScore?.toFixed(2) ?? "0.00"}
+                      {scoreA?.totalScore?.toFixed(2) ?? "0.00"}
                     </div>
                   </div>
                   <div className="text-right space-y-1 min-w-0">
-                    <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{scoreB?.name}</div>
+                    <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countryB?.name}</div>
                     <div className={cn(
                       "text-2xl sm:text-3xl xl:text-4xl font-black font-mono leading-none truncate",
                       isBWinner ? "" : "text-muted-foreground"
                     )} style={isBWinner ? { color: BRAVO_COLOR } : {}}>
-                      {scoreB?.strengthScore?.toFixed(2) ?? "0.00"}
+                      {scoreB?.totalScore?.toFixed(2) ?? "0.00"}
                     </div>
                   </div>
                 </div>
-                {/* coloured bar – uses the same colour logic as the radar chart */}
                 <div className="space-y-2">
                   <div className="h-3 w-full bg-muted rounded-none overflow-hidden flex border border-border/50">
-                    <div className="bg-primary h-full transition-all duration-500"
+                    <div className="h-full transition-all duration-500 bg-primary"
                       style={{
-                        width: `${((scoreA?.strengthScore ?? 0) / ((scoreA?.strengthScore ?? 0) + (scoreB?.strengthScore ?? 0) || 1)) * 100}%`,
-                        backgroundColor: PRIMARY_COLOR,
+                        width: `${((scoreA?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
                       }}
                     />
                     <div className="h-full transition-all duration-500"
                       style={{
-                        width: `${((scoreB?.strengthScore ?? 0) / ((scoreA?.strengthScore ?? 0) + (scoreB?.strengthScore ?? 0) || 1)) * 100}%`,
-                        backgroundColor: BRAVO_COLOR,
+                        width: `${((scoreB?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
+                        backgroundColor: BRAVO_COLOR
                       }}
                     />
                   </div>
@@ -335,7 +305,6 @@ export default function Index() {
               </CardContent>
             </Card>
 
-            {/* Radar chart – use distinct colours */}
             <Card className="border-border/50 bg-card/30 rounded-none radar-chart-container">
               <CardHeader className="bg-accent/5 border-b border-border/50">
                 <CardTitle className="text-xs font-mono uppercase tracking-wider">Capability Matrix</CardTitle>
@@ -347,27 +316,26 @@ export default function Index() {
                     <PolarAngleAxis
                       dataKey="category"
                       tick={{
-                        fill: "#e5e7eb",
+                        fill: "#94a3b8",
                         fontSize: 10,
                         fontFamily: "monospace",
                         fontWeight: "bold",
                       }}
                     />
-                    {/* Alpha line – gold */}
                     <Radar 
-                      name={scoreA?.name ?? "Alpha"} 
+                      name={countryA?.name} 
                       dataKey="A" 
                       stroke={PRIMARY_COLOR} 
                       fill={PRIMARY_COLOR} 
-                      fillOpacity={0.5} 
-                      strokeWidth={3}                     />
-                    {/* Bravo line – orange */}
+                      fillOpacity={0.6} 
+                      strokeWidth={3} 
+                    />
                     <Radar 
-                      name={scoreB?.name ?? "Bravo"} 
+                      name={countryB?.name} 
                       dataKey="B" 
                       stroke={BRAVO_COLOR} 
                       fill={BRAVO_COLOR} 
-                      fillOpacity={0.3} 
+                      fillOpacity={0.4} 
                       strokeWidth={3} 
                     />
                     <RechartsTooltip

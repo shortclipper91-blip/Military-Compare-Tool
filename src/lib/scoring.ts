@@ -19,56 +19,52 @@ export const DEFAULT_WEIGHTS: CategoryWeights = {
   logistics: 0.1,
 };
 
+/**
+ * Default global max values for consistent normalization across all pages.
+ * These are based on the top performers in the dataset.
+ */
+const GLOBAL_MAX = {
+  personnel: 3000000,
+  aircraft: 13300,
+  tanks: 12500,
+  naval: 1000,
+  budget: 900e9,
+};
+
 export function calculateScores(countries: Country[], weights: CategoryWeights = DEFAULT_WEIGHTS) {
-  const maxVals = {
-    personnel: 0,
-    aircraft: 0,
-    tanks: 0,
-    naval: 0,
-    budget: 0,
-  };
-
-  // Determine max values for normalization across the provided set
-  countries.forEach((c) => {
-    maxVals.personnel = Math.max(
-      maxVals.personnel,
-      (c.metrics.activePersonnel ?? 0) + (c.metrics.reservePersonnel ?? 0)
-    );
-    maxVals.aircraft = Math.max(maxVals.aircraft, c.metrics.aircraft ?? 0);
-    maxVals.tanks = Math.max(maxVals.tanks, c.metrics.tanks ?? 0);
-    maxVals.naval = Math.max(maxVals.naval, c.metrics.navalVessels ?? 0);
-    maxVals.budget = Math.max(maxVals.budget, c.metrics.defenseBudgetUsd ?? 0);
-  });
-
   return countries.map((c) => {
-    const normalize = (value: number, max: number) => (max ? value / max : 0) * 100;
+    const normalize = (value: number, max: number) => Math.min((max ? value / max : 0) * 100, 100);
 
     const manpowerScore = normalize(
       (c.metrics.activePersonnel ?? 0) + (c.metrics.reservePersonnel ?? 0),
-      maxVals.personnel
+      GLOBAL_MAX.personnel
     );
     const airPowerScore = normalize(
-      (c.metrics.aircraft ?? 0) * 0.5 + (c.metrics.fighterJets ?? 0),
-      maxVals.aircraft
+      (c.metrics.aircraft ?? 0),
+      GLOBAL_MAX.aircraft
     );
     const groundScore = normalize(
-      (c.metrics.tanks ?? 0) + (c.metrics.armoredVehicles ?? 0) * 0.2,
-      maxVals.tanks
+      (c.metrics.tanks ?? 0),
+      GLOBAL_MAX.tanks
     );
     const navalScore = normalize(
       (c.metrics.navalVessels ?? 0) +
         (c.metrics.submarines ?? 0) * 2 +
         (c.metrics.aircraftCarriers ?? 0) * 10,
-      maxVals.naval
+      GLOBAL_MAX.naval
     );
-    const economyScore = normalize(c.metrics.defenseBudgetUsd ?? 0, maxVals.budget);
+    const economyScore = normalize(c.metrics.defenseBudgetUsd ?? 0, GLOBAL_MAX.budget);
+
+    // Logistics placeholder based on population/area
+    const logisticsScore = normalize((c.metrics.population ?? 0) / 1e6, 1500);
 
     const totalScore = (
       manpowerScore * weights.manpower +
       airPowerScore * weights.airPower +
       groundScore * weights.groundForces +
       navalScore * weights.navalForces +
-      economyScore * weights.economy
+      economyScore * weights.economy +
+      logisticsScore * weights.logistics
     );
 
     return {
@@ -80,7 +76,30 @@ export function calculateScores(countries: Country[], weights: CategoryWeights =
         groundForces: groundScore,
         navalForces: navalScore,
         economy: economyScore,
+        logistics: logisticsScore,
       },
     };
   });
+}
+
+/**
+ * Helper to turn a 0-100 score into a color string.
+ * High scores -> Amber/Gold, Low scores -> Darker amber/brown.
+ */
+export function scoreToColor(score: number): string {
+  // We use a CSS variable for primary, but for the map gradient we can use hex/hsl
+  // High: #f59e0b (Amber 500), Low: #451a03 (Brown/Deep Orange)
+  if (score > 80) return "#fbbf24"; // Amber 400
+  if (score > 60) return "#f59e0b"; // Amber 500
+  if (score > 40) return "#d97706"; // Amber 600
+  if (score > 20) return "#b45309"; // Amber 700
+  return "#92400e"; // Amber 800
+}
+
+/**
+ * Consistent strength index specifically for the Map
+ */
+export function computeStrengthIndex(country: Country) {
+  const [result] = calculateScores([country]);
+  return { score: result.totalScore, normScore: result.totalScore / 100 };
 }
