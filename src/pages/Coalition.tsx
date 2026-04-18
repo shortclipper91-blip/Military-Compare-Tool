@@ -69,7 +69,6 @@ export default function Coalition() {
             onChange={(val) => !team.includes(val) && setTeam([...team, val])}
             placeholder="Add nation to coalition..."
             exclude={[...teamA, ...teamB]}
-            countries={COUNTRIES_DATA}
           />
         </div>
       </CardContent>
