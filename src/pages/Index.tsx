@@ -243,7 +243,8 @@ export default function Index() {
 
                   <div>
                     <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
-                      <DollarSign className="w-3 h-3" /> Economy                    </h3>
+                      <DollarSign className="w-3 h-3" /> Economy
+                    </h3>
                     <StatRow label="Defense Budget" valA={countryA?.metrics.defenseBudgetUsd} valB={countryB?.metrics.defenseBudgetUsd} format="currency" metricKey="defenseBudgetUsd" />
                     <StatRow label="GDP" valA={countryA?.metrics.gdpUsd} valB={countryB?.metrics.gdpUsd} format="currency" metricKey="gdpUsd" />
                   </div>
@@ -314,8 +315,8 @@ export default function Index() {
                     <PolarAngleAxis
                       dataKey="category"
                       tick={{
-                        fill: "#94a3b8",
-                        fontSize: 10,
+                        fill: "#e2e8f0",
+                        fontSize: 11,
                         fontFamily: "monospace",
                         fontWeight: "bold",
                       }}
@@ -337,15 +338,30 @@ export default function Index() {
                       strokeWidth={3} 
                     />
                     <RechartsTooltip
+                      formatter={(val: number) => [val.toFixed(1), "Score"]}
                       contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        color: "white",
+                        backgroundColor: "#161b2b",
+                        border: "1px solid #fbbf24",
+                        color: "#ffffff",
                         fontSize: "12px",
                         fontFamily: "monospace",
                         borderRadius: "0px",
+                        padding: "10px",
+                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
                       }}
-                      itemStyle={{ textTransform: "uppercase", fontWeight: "bold" }}
+                      itemStyle={{ 
+                        textTransform: "uppercase", 
+                        fontWeight: "bold",
+                        color: "#ffffff",
+                        padding: "2px 0"
+                      }}
+                      labelStyle={{
+                        color: "#fbbf24",
+                        marginBottom: "5px",
+                        fontWeight: "800",
+                        borderBottom: "1px solid #263047",
+                        paddingBottom: "3px"
+                      }}
                     />
                   </RadarChart>
                 </ResponsiveContainer>
