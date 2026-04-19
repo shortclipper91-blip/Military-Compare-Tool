@@ -25,8 +25,10 @@ import {
   DollarSign, 
   Zap, 
   ArrowRightLeft, 
-  ShieldCheck,   Info,
-  Database 
+  ShieldCheck,   
+  Info,
+  Database,
+  Dices
 } from "lucide-react";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import METRIC_DESCRIPTIONS from "@/lib/metricDescriptions";
@@ -118,6 +120,15 @@ export default function Index() {
     ];
   }, [scoreA, scoreB]);
 
+  const handleRandomize = () => {
+    const available = [...COUNTRIES_DATA];
+    const firstIdx = Math.floor(Math.random() * available.length);
+    const first = available.splice(firstIdx, 1)[0];
+    const secondIdx = Math.floor(Math.random() * available.length);
+    const second = available[secondIdx];
+    setSelected([first.code, second.code]);
+  };
+
   return (
     <Layout>
       <div className="space-y-8">
@@ -138,15 +149,38 @@ export default function Index() {
               countries={COUNTRIES_DATA}
               className="w-full sm:w-48 xl:w-56"
             />
-            <div className="flex items-center justify-center pb-1">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setSelected([selected[1], selected[0]])}
-                className="shrink-0 h-10 w-10 rounded-none border-border/50 hover:border-primary/50 hover:text-primary"
-              >
-                <ArrowRightLeft className="w-4 h-4" />
-              </Button>
+            <div className="flex items-center justify-center gap-2 pb-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setSelected([selected[1], selected[0]])}
+                      className="shrink-0 h-10 w-10 rounded-none border-border/50 hover:border-primary/50 hover:text-primary"
+                    >
+                      <ArrowRightLeft className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Swap Positions</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleRandomize}
+                      className="shrink-0 h-10 w-10 rounded-none border-border/50 hover:border-primary/50 hover:text-primary bg-primary/5"
+                    >
+                      <Dices className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Randomize Forces</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             <CountrySelector
               label="Force Bravo"
