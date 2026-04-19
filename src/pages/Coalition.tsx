@@ -8,49 +8,76 @@ import { COUNTRIES_DATA, Country } from "@/lib/countryData";
 import { calculateScores } from "@/lib/scoring";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, Swords, Plus } from "lucide-react";
+import { X, Swords } from "lucide-react";
 
 export default function Coalition() {
   const [teamA, setTeamA] = useState<string[]>(["US", "GB"]);
   const [teamB, setTeamB] = useState<string[]>(["CN", "RU"]);
 
   const getCombinedMetrics = (codes: string[]) => {
-    const teamCountries = codes.map(code => COUNTRIES_DATA.find(c => c.code === code)!);
-    return teamCountries.reduce((acc, c) => {
-      Object.keys(c.metrics).forEach(key => {
-        acc[key as keyof typeof c.metrics] = (acc[key as keyof typeof c.metrics] || 0) + c.metrics[key as keyof typeof c.metrics];
+    const teamCountries = codes.map(code => COUNTRIES_DATA.find(c => c.code === code)).filter(Boolean) as Country[];
+    
+    const combined: any = {};
+    
+    teamCountries.forEach(c => {
+      Object.entries(c.metrics).forEach(([key, value]) => {
+        if (typeof value === 'number') {
+          combined[key] = (combined[key] || 0) + value;
+        }
       });
-      return acc;
-    }, {} as any);
+    });
+    
+    return combined;
   };
 
   const metricsA = useMemo(() => getCombinedMetrics(teamA), [teamA]);
   const metricsB = useMemo(() => getCombinedMetrics(teamB), [teamB]);
 
-  const virtualA: Country = { code: "TEAM_A", name: "Coalition Alpha", flagEmoji: "", region: "", metrics: metricsA };
-  const virtualB: Country = { code: "TEAM_B", name: "Coalition Bravo", flagEmoji: "", region: "", metrics: metricsB };
+  const virtualA: Country = { 
+    code: "TEAM_A", 
+    name: "Coalition Alpha", 
+    flagEmoji: "🅰️", 
+    region: "COMBINED", 
+    continent: "COMBINED",
+    alliances: [],
+    metrics: metricsA 
+  };
+  
+  const virtualB: Country = { 
+    code: "TEAM_B", 
+    name: "Coalition Bravo", 
+    flagEmoji: "🅱️", 
+    region: "COMBINED", 
+    continent: "COMBINED",
+    alliances: [],
+    metrics: metricsB 
+  };
 
-  const scores = calculateScores([virtualA, virtualB, ...COUNTRIES_DATA]);
+  const scores = useMemo(() => calculateScores([virtualA, virtualB, ...COUNTRIES_DATA]), [virtualA, virtualB]);
   const scoreA = scores.find(s => s.code === "TEAM_A")!;
   const scoreB = scores.find(s => s.code === "TEAM_B")!;
 
-  const TeamPanel = ({ team, setTeam, label, color }: any) => (
-    <Card className={`border-border/50 bg-card/30`}>
+  const TeamPanel = ({ team, setTeam, label, color, totalScore }: any) => (
+    <Card className="border-border/50 bg-card/30">
       <CardHeader className="border-b border-border/50 flex flex-row items-center justify-between">
         <CardTitle className={`text-xs font-mono uppercase tracking-widest ${color}`}>{label}</CardTitle>
         <span className="text-2xl font-black font-mono">
-          {team.length > 0 ? (label === "Coalition Alpha" ? scoreA.totalScore : scoreB.totalScore).toFixed(2) : "0.00"}
+          {team.length > 0 ? totalScore.toFixed(2) : "0.00"}
         </span>
       </CardHeader>
       <CardContent className="p-4 space-y-4">
-        <div className="flex flex-wrap gap-2 min-h-[100px] content-start">
+        <div className="flex flex-wrap gap-2 min-h-[120px] content-start">
           {team.map((code: string) => {
-            const c = COUNTRIES_DATA.find(x => x.code === code)!;
+            const c = COUNTRIES_DATA.find(x => x.code === code);
+            if (!c) return null;
             return (
-              <div key={code} className="flex items-center gap-2 bg-background border border-border px-2 py-1 rounded text-xs font-mono group">
+              <div key={code} className="flex items-center gap-2 bg-background border border-border px-2 py-1 rounded text-xs font-mono group hover:border-primary/30 transition-colors">
                 <FlagIcon code={code} size={16} />
-                {c.name}
-                <button onClick={() => setTeam(team.filter((t: string) => t !== code))} className="hover:text-destructive transition-colors">
+                <span className="truncate max-w-[100px]">{c.name}</span>
+                <button 
+                  onClick={() => setTeam(team.filter((t: string) => t !== code))} 
+                  className="ml-1 text-muted-foreground hover:text-destructive transition-colors"
+                >
                   <X className="w-3 h-3" />
                 </button>
               </div>
@@ -67,8 +94,9 @@ export default function Coalition() {
           <CountrySelector 
             value="" 
             onChange={(val) => !team.includes(val) && setTeam([...team, val])}
-            placeholder="Add nation to coalition..."
+            placeholder="Add nation..."
             exclude={[...teamA, ...teamB]}
+            countries={COUNTRIES_DATA}
           />
         </div>
       </CardContent>
@@ -84,20 +112,35 @@ export default function Coalition() {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <TeamPanel team={teamA} setTeam={setTeamA} label="Coalition Alpha" color="text-foreground" />
-          <TeamPanel team={teamB} setTeam={setTeamB} label="Coalition Bravo" color="text-primary" />
+          <TeamPanel 
+            team={teamA} 
+            setTeam={setTeamA} 
+            label="Coalition Alpha" 
+            color="text-foreground" 
+            totalScore={scoreA?.totalScore || 0}
+          />
+          <TeamPanel 
+            team={teamB} 
+            setTeam={setTeamB} 
+            label="Coalition Bravo" 
+            color="text-primary" 
+            totalScore={scoreB?.totalScore || 0}
+          />
         </div>
 
-        <Card className="border-primary/20 bg-primary/5">
+        <Card className="border-primary/20 bg-primary/5 rounded-none">
           <CardContent className="p-8 flex flex-col items-center text-center space-y-4">
             <Swords className="w-12 h-12 text-primary" />
             <h2 className="text-2xl font-black uppercase italic">Simulation Result</h2>
-            <div className="text-5xl font-black font-mono">
-              {scoreA.totalScore > scoreB.totalScore ? "ALPHA" : "BRAVO"} DOMINANCE
+            <div className="text-4xl sm:text-5xl font-black font-mono uppercase">
+              {teamA.length === 0 && teamB.length === 0 ? "Awaiting Data" : 
+               scoreA.totalScore > scoreB.totalScore ? "Alpha Dominance" : "Bravo Dominance"}
             </div>
-            <p className="text-muted-foreground font-mono text-xs uppercase">
-              Aggregate strength differential: {Math.abs(scoreA.totalScore - scoreB.totalScore).toFixed(2)} points
-            </p>
+            { (teamA.length > 0 || teamB.length > 0) && (
+              <p className="text-muted-foreground font-mono text-xs uppercase tracking-tighter">
+                Aggregate strength differential: {Math.abs(scoreA.totalScore - scoreB.totalScore).toFixed(2)} Index Points
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
