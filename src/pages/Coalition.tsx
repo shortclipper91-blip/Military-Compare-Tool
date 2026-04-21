@@ -8,7 +8,7 @@ import { COUNTRIES_DATA, Country } from "@/lib/countryData";
 import { calculateScores } from "@/lib/scoring";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, Swords, Dices, Loader2, Play } from "lucide-react";
+import { X, Swords, Dices, Loader2, Play, Trophy } from "lucide-react";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -65,6 +65,9 @@ export default function Coalition() {
   const scoreA = scores.find(s => s.code === "TEAM_A")!;
   const scoreB = scores.find(s => s.code === "TEAM_B")!;
 
+  const isWinnerA = hasSimulated && scoreA.totalScore > scoreB.totalScore;
+  const isWinnerB = hasSimulated && scoreB.totalScore > scoreA.totalScore;
+
   const handleRandomize = () => {
     const available = [...COUNTRIES_DATA];
     const newTeamA: string[] = [];
@@ -100,13 +103,14 @@ export default function Coalition() {
     }, 1800);
   };
 
-  const TeamPanel = ({ team, setTeam, label, color, totalScore, hasSimulated }: any) => (
+  const TeamPanel = ({ team, setTeam, label, color, totalScore, hasSimulated, isWinner }: any) => (
     <Card className="border-border/50 bg-card/30">
       <CardHeader className="border-b border-border/50 flex flex-row items-center justify-between">
         <CardTitle className={`text-xs font-mono uppercase tracking-widest ${color}`}>{label}</CardTitle>
         <span className={cn(
           "text-2xl font-black font-mono transition-all duration-700",
-          !hasSimulated && "opacity-30 blur-[2px]"
+          !hasSimulated && "opacity-30 blur-[2px]",
+          isWinner && "text-primary"
         )}>
           {hasSimulated ? totalScore.toFixed(2) : "??.??"}
         </span>
@@ -182,6 +186,7 @@ export default function Coalition() {
             color="text-foreground" 
             totalScore={scoreA?.totalScore || 0}
             hasSimulated={hasSimulated}
+            isWinner={isWinnerA}
           />
           <TeamPanel 
             team={teamB} 
@@ -190,6 +195,7 @@ export default function Coalition() {
             color="text-primary" 
             totalScore={scoreB?.totalScore || 0}
             hasSimulated={hasSimulated}
+            isWinner={isWinnerB}
           />
         </div>
 
@@ -220,9 +226,9 @@ export default function Coalition() {
                 </div>
               ) : (
                 <div className="p-8 flex flex-col items-center text-center space-y-4 animate-in fade-in zoom-in-95 duration-500">
-                  <Swords className="w-12 h-12 text-primary" />
+                  <Trophy className="w-12 h-12 text-primary animate-bounce" />
                   <h2 className="text-2xl font-black uppercase italic">Simulation Result</h2>
-                  <div className="text-4xl sm:text-5xl font-black font-mono uppercase">
+                  <div className="text-4xl sm:text-5xl font-black font-mono uppercase text-primary">
                     {scoreA.totalScore > scoreB.totalScore ? "Alpha Dominance" : "Bravo Dominance"}
                   </div>
                   <p className="text-muted-foreground font-mono text-xs uppercase tracking-tighter">
