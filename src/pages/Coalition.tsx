@@ -99,12 +99,15 @@ export default function Coalition() {
     }, 1800);
   };
 
-  const TeamPanel = ({ team, setTeam, label, color, totalScore }: any) => (
+  const TeamPanel = ({ team, setTeam, label, color, totalScore, hasSimulated }: any) => (
     <Card className="border-border/50 bg-card/30">
       <CardHeader className="border-b border-border/50 flex flex-row items-center justify-between">
         <CardTitle className={`text-xs font-mono uppercase tracking-widest ${color}`}>{label}</CardTitle>
-        <span className="text-2xl font-black font-mono">
-          {team.length > 0 ? totalScore.toFixed(2) : "0.00"}
+        <span className={cn(
+          "text-2xl font-black font-mono transition-all duration-700",
+          !hasSimulated && "opacity-30 blur-[2px]"
+        )}>
+          {hasSimulated ? totalScore.toFixed(2) : "??.??"}
         </span>
       </CardHeader>
       <CardContent className="p-4 space-y-4">
@@ -177,6 +180,7 @@ export default function Coalition() {
             label="Coalition Alpha" 
             color="text-foreground" 
             totalScore={scoreA?.totalScore || 0}
+            hasSimulated={hasSimulated}
           />
           <TeamPanel 
             team={teamB} 
@@ -184,6 +188,7 @@ export default function Coalition() {
             label="Coalition Bravo" 
             color="text-primary" 
             totalScore={scoreB?.totalScore || 0}
+            hasSimulated={hasSimulated}
           />
         </div>
 
