@@ -6,11 +6,33 @@ import { FlagIcon } from "@/components/flag-icon";
 import { CountrySelector } from "@/components/CountrySelector";
 import { COUNTRIES_DATA, Country } from "@/lib/countryData";
 import { calculateScores } from "@/lib/scoring";
+import { formatCompact, formatCurrency } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, Swords, Dices, Loader2, Play, Trophy } from "lucide-react";
+import { X, Swords, Dices, Loader2, Play, Trophy, Users, Plane, Target, Anchor, DollarSign } from "lucide-react";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+
+const AggregateStat = ({ icon: Icon, label, valA, valB, format = "compact" }: any) => {
+  const isAWinner = (valA || 0) > (valB || 0);
+  const isBWinner = (valB || 0) > (valA || 0);
+  const fmt = (v: number) => format === "currency" ? formatCurrency(v) : formatCompact(v);
+
+  return (
+    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 py-3 border-b border-border/20 last:border-0">
+      <div className={cn("text-right font-mono text-sm", isAWinner ? "text-primary font-bold" : "text-muted-foreground")}>
+        {fmt(valA || 0)}
+      </div>
+      <div className="flex flex-col items-center gap-1 w-32">
+        <Icon className="w-3.5 h-3.5 text-muted-foreground/40" />
+        <span className="text-[9px] font-mono uppercase text-muted-foreground/60 tracking-tighter text-center">{label}</span>
+      </div>
+      <div className={cn("text-left font-mono text-sm", isBWinner ? "text-primary font-bold" : "text-muted-foreground")}>
+        {fmt(valB || 0)}
+      </div>
+    </div>
+  );
+};
 
 export default function Coalition() {
   const [teamA, setTeamA] = useState<string[]>(["US", "GB"]);
@@ -18,7 +40,6 @@ export default function Coalition() {
   const [isSimulating, setIsSimulating] = useState(false);
   const [hasSimulated, setHasSimulated] = useState(false);
 
-  // Reset simulation when teams change
   useEffect(() => {
     setHasSimulated(false);
   }, [teamA, teamB]);
@@ -96,7 +117,6 @@ export default function Coalition() {
     setIsSimulating(true);
     setHasSimulated(false);
     
-    // Simulate tactical computation time
     setTimeout(() => {
       setIsSimulating(false);
       setHasSimulated(true);
@@ -225,20 +245,37 @@ export default function Coalition() {
                   </div>
                 </div>
               ) : (
-                <div className="p-8 flex flex-col items-center text-center space-y-4 animate-in fade-in zoom-in-95 duration-500">
-                  <Trophy className="w-12 h-12 text-primary animate-bounce" />
-                  <h2 className="text-2xl font-black uppercase italic">Simulation Result</h2>
-                  <div className="text-4xl sm:text-5xl font-black font-mono uppercase text-primary">
-                    {scoreA.totalScore > scoreB.totalScore ? "Alpha Dominance" : "Bravo Dominance"}
+                <div className="p-8 flex flex-col items-center text-center space-y-8 animate-in fade-in zoom-in-95 duration-500">
+                  <div className="flex flex-col items-center gap-4">
+                    <Trophy className="w-12 h-12 text-primary animate-bounce" />
+                    <h2 className="text-2xl font-black uppercase italic">Simulation Result</h2>
+                    <div className="text-4xl sm:text-5xl font-black font-mono uppercase text-primary">
+                      {scoreA.totalScore > scoreB.totalScore ? "Alpha Dominance" : "Bravo Dominance"}
+                    </div>
                   </div>
+
+                  <div className="w-full max-w-2xl bg-background/40 border border-border/50 p-6 rounded-none space-y-2">
+                    <div className="flex justify-between px-2 mb-4 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                      <span>Coalition Alpha Total</span>
+                      <span>Tactical Metrics</span>
+                      <span>Coalition Bravo Total</span>
+                    </div>
+                    <AggregateStat icon={Users} label="Total Personnel" valA={metricsA.activePersonnel} valB={metricsB.activePersonnel} />
+                    <AggregateStat icon={Plane} label="Total Aircraft" valA={metricsA.aircraft} valB={metricsB.aircraft} />
+                    <AggregateStat icon={Target} label="Main Battle Tanks" valA={metricsA.tanks} valB={metricsB.tanks} />
+                    <AggregateStat icon={Anchor} label="Naval Assets" valA={metricsA.navalVessels} valB={metricsB.navalVessels} />
+                    <AggregateStat icon={DollarSign} label="Defense Budget" valA={metricsA.defenseBudgetUsd} valB={metricsB.defenseBudgetUsd} format="currency" />
+                  </div>
+
                   <p className="text-muted-foreground font-mono text-xs uppercase tracking-tighter">
                     Aggregate strength differential: {Math.abs(scoreA.totalScore - scoreB.totalScore).toFixed(2)} Index Points
                   </p>
+                  
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     onClick={() => setHasSimulated(false)}
-                    className="mt-4 text-[9px] font-mono uppercase tracking-widest text-muted-foreground hover:text-primary"
+                    className="mt-2 text-[9px] font-mono uppercase tracking-widest text-muted-foreground hover:text-primary"
                   >
                     Reset Simulation
                   </Button>
