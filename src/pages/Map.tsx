@@ -8,8 +8,9 @@ import { CountrySelector } from "@/components/CountrySelector";
 import { COUNTRIES_DATA } from "@/lib/countryData";
 import { calculateScores, scoreToColor } from "@/lib/scoring";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Map as MapIcon, ZoomIn, ZoomOut, RotateCcw, X } from "lucide-react";
+import { Map as MapIcon, ZoomIn, ZoomOut, RotateCcw, X, Target, ShieldCheck, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -146,101 +147,135 @@ export default function MapPage() {
                 </Geographies>
               </ZoomableGroup>
             </ComposableMap>
+          </Card>
 
-            {focusedCountry && (
-              <div className="absolute bottom-4 left-4 bg-card/95 border border-primary/30 p-5 rounded-none shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 max-w-xs w-full">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <FlagIcon code={focusedCountry.code} size={28} />
-                    <span className="font-black uppercase tracking-tighter text-lg italic">{focusedCountry.name}</span>
+          <div className="space-y-6">
+            {/* Target Profile Card */}
+            <Card className={cn(
+              "border-2 transition-all duration-300 min-h-[280px] flex flex-col justify-center",
+              focusedCountry ? "border-primary/40 bg-primary/5 shadow-[0_0_20px_rgba(251,191,36,0.1)]" : "border-border/50 bg-card/30 border-dashed"
+            )}>
+              {focusedCountry ? (
+                <div className="p-5 space-y-5 animate-in fade-in zoom-in-95 duration-300">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <FlagIcon code={focusedCountry.code} size={28} />
+                      <div className="flex flex-col">
+                        <span className="font-black uppercase tracking-tighter text-lg italic leading-tight">{focusedCountry.name}</span>
+                        <span className="text-[8px] font-mono text-primary uppercase tracking-[0.2em]">Target Identification: Confirmed</span>
+                      </div>
+                    </div>
+                    {focusedCountry.isLocked && (
+                      <button 
+                        onClick={() => setSelected(null)}
+                        className="p-1 text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
-                  {focusedCountry.isLocked && (
-                    <button 
-                      onClick={() => setSelected(null)}
-                      className="p-1 hover:text-primary transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-[0.2em] mb-1">Strength Index</div>
-                    <div className="text-4xl font-black font-mono text-primary leading-none">{focusedCountry.score.toFixed(2)}</div>
-                  </div>
-                  <div className="pt-3 border-t border-border/50">
-                    <div className="text-[10px] font-mono text-muted-foreground uppercase mb-2">Capabilities Tier</div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-1.5 flex-1 bg-muted/20">
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Zap className="w-3 h-3 text-primary" />
+                        <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-[0.2em]">Strength Index</div>
+                      </div>
+                      <div className="text-5xl font-black font-mono text-primary leading-none tabular-nums">
+                        {focusedCountry.score.toFixed(2)}
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-border/50">
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Capabilities Tier</div>
+                        <span className="text-[10px] font-mono font-bold text-primary">
+                          {focusedCountry.score > 70 ? 'ELITE' : focusedCountry.score > 40 ? 'MAJOR' : 'REGIONAL'}
+                        </span>
+                      </div>
+                      <div className="h-2 w-full bg-muted/20 rounded-none overflow-hidden flex border border-border/50">
                         <div 
-                          className="h-full bg-primary shadow-[0_0_10px_rgba(251,191,36,0.5)]" 
+                          className="h-full bg-primary shadow-[0_0_10px_rgba(251,191,36,0.5)] transition-all duration-500" 
                           style={{ width: `${focusedCountry.score}%` }} 
                         />
                       </div>
-                      <span className="text-[10px] font-mono font-bold text-primary">
-                        {focusedCountry.score > 70 ? 'ELITE' : focusedCountry.score > 40 ? 'MAJOR' : 'REGIONAL'}
-                      </span>
+                    </div>
+                    
+                    {!focusedCountry.isLocked && (
+                      <div className="flex items-center gap-2 justify-center py-1 bg-primary/10 border border-primary/20">
+                        <Target className="w-3 h-3 text-primary animate-pulse" />
+                        <span className="text-[8px] font-mono text-primary font-bold uppercase tracking-widest">Click Map to Lock Data</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-8 flex flex-col items-center text-center space-y-4 opacity-30">
+                  <div className="w-12 h-12 rounded-full border border-border flex items-center justify-center">
+                    <Target className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-mono uppercase tracking-widest">No Active Target</p>
+                    <p className="text-[8px] font-mono leading-relaxed">Hover or select a region to populate tactical data</p>
+                  </div>
+                </div>
+              )}
+            </Card>
+
+            {/* Map Intelligence Card */}
+            <Card className="border-border/50 bg-card/30">
+              <CardHeader className="border-b border-border/50 py-3">
+                <CardTitle className="text-xs font-mono uppercase tracking-widest flex items-center gap-2">
+                  <ShieldCheck className="w-3.5 h-3.5 text-primary/50" />
+                  Map Intelligence
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-5">
+                <div className="space-y-3">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Index Gradient</div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 bg-[#fbbf24] shadow-[0_0_8px_rgba(251,191,36,0.3)]" />
+                      <span className="text-[10px] font-mono uppercase">Tier 1 (Global Power)</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 bg-[#f59e0b]" />
+                      <span className="text-[10px] font-mono uppercase">Tier 2 (Major Regional)</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 bg-[#92400e]" />
+                      <span className="text-[10px] font-mono uppercase">Tier 3 (Regional)</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-4 h-4 opacity-20 bg-muted border border-white/10" />
+                      <span className="text-[10px] font-mono uppercase text-muted-foreground">No Intel / Neutral</span>
                     </div>
                   </div>
-                  {!focusedCountry.isLocked && (
-                    <div className="text-[9px] font-mono text-muted-foreground italic uppercase">
-                      Click to lock tactical view
+                </div>
+                
+                <div className="pt-6 border-t border-border/50">
+                  <div className="bg-primary/5 border border-primary/20 p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <MapIcon className="w-3 h-3 text-primary" />
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-primary">Instructions</span>
                     </div>
-                  )}
+                    <ul className="space-y-2 text-[9px] font-mono uppercase text-muted-foreground leading-relaxed">
+                      <li>• Hover over any colored region for quick assessment</li>
+                      <li>• Click region to lock tactical data card</li>
+                      <li>• Use search bar to locate specific priority targets</li>
+                      <li>• Scroll or use controls to adjust operational zoom</li>
+                    </ul>
+                  </div>
                 </div>
-              </div>
-            )}
-          </Card>
 
-          <Card className="border-border/50 bg-card/30">
-            <CardHeader>
-              <CardTitle className="text-xs font-mono uppercase tracking-widest">Map Intelligence</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-3">
-                <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Index Gradient</div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 bg-[#fbbf24] shadow-[0_0_8px_rgba(251,191,36,0.3)]" />
-                    <span className="text-[10px] font-mono uppercase">Tier 1 (Global Power)</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 bg-[#f59e0b]" />
-                    <span className="text-[10px] font-mono uppercase">Tier 2 (Major Regional)</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 bg-[#92400e]" />
-                    <span className="text-[10px] font-mono uppercase">Tier 3 (Regional)</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 opacity-20 bg-muted border border-white/10" />
-                    <span className="text-[10px] font-mono uppercase text-muted-foreground">No Intel / Neutral</span>
-                  </div>
+                <div className="pt-4">
+                  <p className="text-[9px] text-muted-foreground leading-relaxed italic uppercase tracking-tighter opacity-50">
+                    Global Force Distribution Visualizer v4.2.0. Real-time rendering based on STRATCOM-6 Unified Dataset.
+                  </p>
                 </div>
-              </div>
-              
-              <div className="pt-6 border-t border-border/50">
-                <div className="bg-primary/5 border border-primary/20 p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <MapIcon className="w-3 h-3 text-primary" />
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-primary">Instructions</span>
-                  </div>
-                  <ul className="space-y-2 text-[9px] font-mono uppercase text-muted-foreground leading-relaxed">
-                    <li>• Hover over any colored region for quick assessment</li>
-                    <li>• Click region to lock tactical data card</li>
-                    <li>• Use search bar to locate specific priority targets</li>
-                    <li>• Scroll or use controls to adjust operational zoom</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <p className="text-[9px] text-muted-foreground leading-relaxed italic uppercase tracking-tighter opacity-50">
-                  Global Force Distribution Visualizer v4.2.0. Real-time rendering based on STRATCOM-6 Unified Dataset.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </Layout>
