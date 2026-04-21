@@ -317,22 +317,21 @@ export default function Index() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-3 w-full bg-muted rounded-none overflow-hidden flex border border-border/50">
-                    <div className="h-full transition-all duration-500 bg-primary"
+                  <div className="h-3 w-full bg-muted/20 rounded-none overflow-hidden flex border border-border/50">
+                    <div className={cn("h-full transition-all duration-500", isAWinner ? "bg-primary" : "bg-muted-foreground/30")}
                       style={{
                         width: `${((scoreA?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
                       }}
                     />
-                    <div className="h-full transition-all duration-500"
+                    <div className={cn("h-full transition-all duration-500", isBWinner ? "bg-primary" : "bg-muted-foreground/30")}
                       style={{
                         width: `${((scoreB?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
-                        backgroundColor: BRAVO_COLOR
                       }}
                     />
                   </div>
                   <div className="flex justify-between text-[9px] font-mono text-muted-foreground uppercase tracking-widest">
-                    <span>Force A Share</span>
-                    <span>Force B Share</span>
+                    <span className={cn(isAWinner && "text-primary")}>Force A Share</span>
+                    <span className={cn(isBWinner && "text-primary")}>Force B Share</span>
                   </div>
                 </div>
               </CardContent>
