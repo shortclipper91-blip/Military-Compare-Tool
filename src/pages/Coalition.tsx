@@ -8,7 +8,8 @@ import { COUNTRIES_DATA, Country } from "@/lib/countryData";
 import { calculateScores } from "@/lib/scoring";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, Swords } from "lucide-react";
+import { X, Swords, Dices } from "lucide-react";
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 export default function Coalition() {
   const [teamA, setTeamA] = useState<string[]>(["US", "GB"]);
@@ -56,6 +57,31 @@ export default function Coalition() {
   const scores = useMemo(() => calculateScores([virtualA, virtualB, ...COUNTRIES_DATA]), [virtualA, virtualB]);
   const scoreA = scores.find(s => s.code === "TEAM_A")!;
   const scoreB = scores.find(s => s.code === "TEAM_B")!;
+
+  const handleRandomize = () => {
+    const available = [...COUNTRIES_DATA];
+    const newTeamA: string[] = [];
+    const newTeamB: string[] = [];
+    
+    // Pick 2-4 countries for Team A
+    const countA = Math.floor(Math.random() * 3) + 2;
+    for (let i = 0; i < countA; i++) {
+      if (available.length === 0) break;
+      const idx = Math.floor(Math.random() * available.length);
+      newTeamA.push(available.splice(idx, 1)[0].code);
+    }
+    
+    // Pick 2-4 countries for Team B
+    const countB = Math.floor(Math.random() * 3) + 2;
+    for (let i = 0; i < countB; i++) {
+      if (available.length === 0) break;
+      const idx = Math.floor(Math.random() * available.length);
+      newTeamB.push(available.splice(idx, 1)[0].code);
+    }
+    
+    setTeamA(newTeamA);
+    setTeamB(newTeamB);
+  };
 
   const TeamPanel = ({ team, setTeam, label, color, totalScore }: any) => (
     <Card className="border-border/50 bg-card/30">
@@ -106,9 +132,26 @@ export default function Coalition() {
   return (
     <Layout>
       <div className="space-y-8">
-        <header>
-          <h1 className="text-4xl font-black tracking-tighter uppercase italic">Coalition Builder</h1>
-          <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest">Aggregate Force Projection Simulator</p>
+        <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-black tracking-tighter uppercase italic">Coalition Builder</h1>
+            <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest">Aggregate Force Projection Simulator</p>
+          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={handleRandomize}
+                  className="h-12 w-12 border-border/50 hover:border-primary/50 hover:text-primary bg-primary/5"
+                >
+                  <Dices className="w-6 h-6" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Randomize Coalitions</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
