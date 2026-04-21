@@ -23,10 +23,13 @@ import {
   DollarSign, 
   Zap, 
   Radiation, 
-  Shield 
+  Shield,
+  Download,
+  ShieldCheck
 } from "lucide-react";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { exportAsImage } from "@/lib/export";
 
 const AggregateStat = ({ icon: Icon, label, valA, valB, format = "compact" }: any) => {
   const isAWinner = (valA || 0) > (valB || 0);
@@ -58,6 +61,7 @@ export default function Coalition() {
   const [teamB, setTeamB] = useState<string[]>(["CN", "RU"]);
   const [isSimulating, setIsSimulating] = useState(false);
   const [hasSimulated, setHasSimulated] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     setHasSimulated(false);
@@ -142,6 +146,12 @@ export default function Coalition() {
     }, 1800);
   };
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    await exportAsImage("coalition-capture", `STRATCOM-Coalition-Simulation.png`);
+    setIsExporting(false);
+  };
+
   const TeamPanel = ({ team, setTeam, label, color, totalScore, hasSimulated, isWinner }: any) => (
     <Card className="border-border/50 bg-card/30">
       <CardHeader className="border-b border-border/50 flex flex-row items-center justify-between">
@@ -200,21 +210,34 @@ export default function Coalition() {
             <h1 className="text-4xl font-black tracking-tighter uppercase italic">Coalition Builder</h1>
             <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest">Aggregate Force Projection Simulator</p>
           </div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  onClick={handleRandomize}
-                  className="h-12 w-12 border-border/50 hover:border-primary/50 hover:text-primary bg-primary/5"
-                >
-                  <Dices className="w-6 h-6" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Randomize Coalitions</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <div className="flex gap-3">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={handleRandomize}
+                    className="h-12 w-12 border-border/50 hover:border-primary/50 hover:text-primary bg-primary/5"
+                  >
+                    <Dices className="w-6 h-6" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Randomize Coalitions</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            {hasSimulated && (
+              <Button 
+                onClick={handleExport} 
+                disabled={isExporting}
+                className="font-mono text-[10px] uppercase tracking-widest h-12 px-6 rounded-none border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary"
+              >
+                {isExporting ? "Generating..." : "Export Briefing"}
+                <Download className="ml-2 w-3 h-3" />
+              </Button>
+            )}
+          </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -238,7 +261,22 @@ export default function Coalition() {
           />
         </div>
 
-        <div className="relative group">
+        <div id="coalition-capture" className="relative group bg-background">
+          {/* Branding for export */}
+          <div className="hidden show-on-export flex items-center justify-between border-b border-primary/20 pb-4 mb-8">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="w-8 h-8 text-primary" />
+              <div>
+                <h2 className="text-xl font-black tracking-tighter uppercase italic leading-none">STRATCOM<span className="text-primary">.INTEL</span></h2>
+                <p className="text-[8px] font-mono text-muted-foreground uppercase tracking-[0.3em] mt-1">Coalition Simulation Briefing // {new Date().toLocaleDateString()}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] font-mono text-primary uppercase font-bold">Security Clearance: Level 4</div>
+              <div className="text-[8px] font-mono text-muted-foreground uppercase mt-1">Subject: Aggregate Force Projection</div>
+            </div>
+          </div>
+
           <Card className={`border-2 transition-all duration-500 overflow-hidden ${hasSimulated ? 'border-primary/40 bg-primary/5' : 'border-border/50 bg-card/30'}`}>
             <CardContent className="p-0">
               {!hasSimulated && !isSimulating ? (
@@ -297,7 +335,7 @@ export default function Coalition() {
                     variant="ghost" 
                     size="sm" 
                     onClick={() => setHasSimulated(false)}
-                    className="mt-2 text-[9px] font-mono uppercase tracking-widest text-muted-foreground hover:text-primary"
+                    className="mt-2 text-[9px] font-mono uppercase tracking-widest text-muted-foreground hover:text-primary no-export"
                   >
                     Reset Simulation
                   </Button>
@@ -305,6 +343,16 @@ export default function Coalition() {
               )}
             </CardContent>
           </Card>
+
+          {/* Footer for export */}
+          <div className="hidden show-on-export pt-8 border-t border-border/30 flex justify-between items-end opacity-50">
+            <div className="text-[8px] font-mono uppercase tracking-widest">
+              Generated via STRATCOM.INTEL // Aggregate Force Projection Simulator v4.2.0
+            </div>
+            <div className="text-[8px] font-mono uppercase tracking-tighter">
+              Data Sources: IISS, SIPRI, GFP, FAS (2023-2024)
+            </div>
+          </div>
         </div>
       </div>
     </Layout>

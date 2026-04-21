@@ -26,3 +26,18 @@
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   }
 }
+
+/* Export-specific visibility rules */
+.show-on-export {
+  display: none;
+}
+
+/* When html2canvas clones the document, we can target specific elements */
+[id$="-capture"] .show-on-export {
+  display: flex;
+}
+
+/* Hide elements that shouldn't be in the infographic */
+.no-export {
+  display: block;
+}

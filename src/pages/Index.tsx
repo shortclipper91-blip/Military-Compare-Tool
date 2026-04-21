@@ -28,11 +28,14 @@ import {
   ShieldCheck,   
   Info,
   Database,
-  Dices
+  Dices,
+  Download,
+  Share2
 } from "lucide-react";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import METRIC_DESCRIPTIONS from "@/lib/metricDescriptions";
 import { cn } from "@/lib/utils";
+import { exportAsImage } from "@/lib/export";
 import "../extra.css";
 
 const PRIMARY_COLOR = "#fbbf24"; // Amber 400 for higher score
@@ -98,6 +101,7 @@ const StatRow = ({
 
 export default function Index() {
   const [selected, setSelected] = useState(["US", "CN"]);
+  const [isExporting, setIsExporting] = useState(false);
 
   const countryA = useMemo(() => COUNTRIES_DATA.find(c => c.code === selected[0]), [selected]);
   const countryB = useMemo(() => COUNTRIES_DATA.find(c => c.code === selected[1]), [selected]);
@@ -127,6 +131,12 @@ export default function Index() {
     const secondIdx = Math.floor(Math.random() * available.length);
     const second = available[secondIdx];
     setSelected([first.code, second.code]);
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    await exportAsImage("briefing-capture", `STRATCOM-Briefing-${selected[0]}-vs-${selected[1]}.png`);
+    setIsExporting(false);
   };
 
   return (
@@ -192,214 +202,253 @@ export default function Index() {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <Card className="border-border/50 bg-card/30">
-              <CardHeader className="border-b border-border/50 flex flex-row items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CardTitle className="text-xs font-mono uppercase tracking-widest">Detailed Metrics</CardTitle>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button className="p-1 hover:text-primary transition-colors">
-                          <Database className="w-3 h-3 text-muted-foreground/50" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent className="bg-card border-border p-3">
-                        <div className="space-y-2">
-                          <p className="text-[10px] font-mono uppercase tracking-widest text-primary border-b border-primary/20 pb-1">Intelligence Sources</p>
-                          <ul className="space-y-1 text-muted-foreground text-[9px] font-mono uppercase">
-                            <li>• IISS Military Balance 2024</li>
-                            <li>• SIPRI Arms Transfers Database</li>
-                            <li>• Global Firepower Index 2024</li>
-                            <li>• FAS Nuclear Notebook 2023</li>
-                          </ul>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <div className="flex gap-6">
-                  <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
-                    <FlagIcon code={countryA?.code || ""} size={16} />
-                    <span className={cn(isAWinner && "text-primary font-bold")}>{countryA?.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
-                    <FlagIcon code={countryB?.code || ""} size={16} />
-                    <span className={cn(isBWinner && "font-bold")} style={isBWinner ? { color: BRAVO_COLOR } : {}}>{countryB?.name}</span>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-8">
-                  <div>
-                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
-                      <Users className="w-3 h-3" /> Manpower
-                    </h3>
-                    <StatRow label="Active Personnel" valA={countryA?.metrics.activePersonnel} valB={countryB?.metrics.activePersonnel} metricKey="activePersonnel" />
-                    <StatRow label="Reserve Forces" valA={countryA?.metrics.reservePersonnel} valB={countryB?.metrics.reservePersonnel} metricKey="reservePersonnel" />
-                    <StatRow label="Paramilitary" valA={countryA?.metrics.paramilitary} valB={countryB?.metrics.paramilitary} metricKey="paramilitary" />
-                  </div>
+        <div className="flex justify-end">
+          <Button 
+            onClick={handleExport} 
+            disabled={isExporting}
+            className="font-mono text-[10px] uppercase tracking-widest h-9 px-6 rounded-none border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary"
+          >
+            {isExporting ? "Generating..." : "Export Intelligence Briefing"}
+            <Download className="ml-2 w-3 h-3" />
+          </Button>
+        </div>
 
-                  <div>
-                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
-                      <Plane className="w-3 h-3" /> Air Power
-                    </h3>
-                    <StatRow label="Total Aircraft" valA={countryA?.metrics.aircraft} valB={countryB?.metrics.aircraft} metricKey="aircraft" />
-                    <StatRow label="Fighter Jets" valA={countryA?.metrics.fighterJets} valB={countryB?.metrics.fighterJets} metricKey="fighterJets" />
-                    <StatRow label="Attack Helicopters" valA={countryA?.metrics.attackHelicopters} valB={countryB?.metrics.attackHelicopters} metricKey="attackHelicopters" />
-                  </div>
-
-                  <div>
-                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
-                      <Target className="w-3 h-3" /> Ground Forces
-                    </h3>
-                    <StatRow label="Main Battle Tanks" valA={countryA?.metrics.tanks} valB={countryB?.metrics.tanks} metricKey="tanks" />
-                    <StatRow label="Armored Vehicles" valA={countryA?.metrics.armoredVehicles} valB={countryB?.metrics.armoredVehicles} metricKey="armoredVehicles" />
-                    <StatRow label="Artillery Units" valA={countryA?.metrics.selfPropelledArtillery} valB={countryB?.metrics.selfPropelledArtillery} metricKey="selfPropelledArtillery" />
-                  </div>
-
-                  <div>
-                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
-                      <Anchor className="w-3 h-3" /> Naval Forces
-                    </h3>
-                    <StatRow label="Total Vessels" valA={countryA?.metrics.navalVessels} valB={countryB?.metrics.navalVessels} metricKey="navalVessels" />
-                    <StatRow label="Submarines" valA={countryA?.metrics.submarines} valB={countryB?.metrics.submarines} metricKey="submarines" />
-                    <StatRow label="Destroyers" valA={countryA?.metrics.destroyers} valB={countryB?.metrics.destroyers} metricKey="destroyers" />
-                  </div>
-
-                  <div>
-                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
-                      <Zap className="w-3 h-3" /> Strategic
-                    </h3>
-                    <StatRow label="Nuclear Warheads" valA={countryA?.metrics.nuclearWarheads} valB={countryB?.metrics.nuclearWarheads} metricKey="nuclearWarheads" format="number" />
-                  </div>
-
-                  <div>
-                    <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
-                      <DollarSign className="w-3 h-3" /> Economy
-                    </h3>
-                    <StatRow label="Defense Budget" valA={countryA?.metrics.defenseBudgetUsd} valB={countryB?.metrics.defenseBudgetUsd} format="currency" metricKey="defenseBudgetUsd" />
-                    <StatRow label="GDP" valA={countryA?.metrics.gdpUsd} valB={countryB?.metrics.gdpUsd} format="currency" metricKey="gdpUsd" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        {/* Capture Target */}
+        <div id="briefing-capture" className="space-y-8 bg-background">
+          {/* Branding for export */}
+          <div className="hidden show-on-export flex items-center justify-between border-b border-primary/20 pb-4 mb-8">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="w-8 h-8 text-primary" />
+              <div>
+                <h2 className="text-xl font-black tracking-tighter uppercase italic leading-none">STRATCOM<span className="text-primary">.INTEL</span></h2>
+                <p className="text-[8px] font-mono text-muted-foreground uppercase tracking-[0.3em] mt-1">Classified Intelligence Briefing // {new Date().toLocaleDateString()}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] font-mono text-primary uppercase font-bold">Security Clearance: Level 4</div>
+              <div className="text-[8px] font-mono text-muted-foreground uppercase mt-1">Subject: Force Projection Analysis</div>
+            </div>
           </div>
 
-          <div className="space-y-6">
-            <Card className="border-primary/20 bg-primary/5 rounded-none relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-2 opacity-10">
-                <ShieldCheck className="w-24 h-24" />
-              </div>
-              <CardHeader>
-                <CardTitle className="text-xs font-mono uppercase tracking-wider text-primary">Military Strength Index</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-8 relative z-10">
-                <div className="grid grid-cols-2 gap-2 items-end">
-                  <div className="space-y-1 min-w-0">
-                    <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countryA?.name}</div>
-                    <div className={cn(
-                      "text-2xl sm:text-3xl xl:text-4xl font-black font-mono leading-none truncate",
-                      isAWinner ? "text-primary" : "text-muted-foreground"
-                    )}>
-                      {scoreA?.totalScore?.toFixed(2) ?? "0.00"}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+              <Card className="border-border/50 bg-card/30">
+                <CardHeader className="border-b border-border/50 flex flex-row items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-xs font-mono uppercase tracking-widest">Detailed Metrics</CardTitle>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button className="p-1 hover:text-primary transition-colors">
+                            <Database className="w-3 h-3 text-muted-foreground/50" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-card border-border p-3">
+                          <div className="space-y-2">
+                            <p className="text-[10px] font-mono uppercase tracking-widest text-primary border-b border-primary/20 pb-1">Intelligence Sources</p>
+                            <ul className="space-y-1 text-muted-foreground text-[9px] font-mono uppercase">
+                              <li>• IISS Military Balance 2024</li>
+                              <li>• SIPRI Arms Transfers Database</li>
+                              <li>• Global Firepower Index 2024</li>
+                              <li>• FAS Nuclear Notebook 2023</li>
+                            </ul>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <div className="flex gap-6">
+                    <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
+                      <FlagIcon code={countryA?.code || ""} size={16} />
+                      <span className={cn(isAWinner && "text-primary font-bold")}>{countryA?.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-mono uppercase">
+                      <FlagIcon code={countryB?.code || ""} size={16} />
+                      <span className={cn(isBWinner && "font-bold")} style={isBWinner ? { color: BRAVO_COLOR } : {}}>{countryB?.name}</span>
                     </div>
                   </div>
-                  <div className="text-right space-y-1 min-w-0">
-                    <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countryB?.name}</div>
-                    <div className={cn(
-                      "text-2xl sm:text-3xl xl:text-4xl font-black font-mono leading-none truncate",
-                      isBWinner ? "" : "text-muted-foreground"
-                    )} style={isBWinner ? { color: BRAVO_COLOR } : {}}>
-                      {scoreB?.totalScore?.toFixed(2) ?? "0.00"}
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-8">
+                    <div>
+                      <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                        <Users className="w-3 h-3" /> Manpower
+                      </h3>
+                      <StatRow label="Active Personnel" valA={countryA?.metrics.activePersonnel} valB={countryB?.metrics.activePersonnel} metricKey="activePersonnel" />
+                      <StatRow label="Reserve Forces" valA={countryA?.metrics.reservePersonnel} valB={countryB?.metrics.reservePersonnel} metricKey="reservePersonnel" />
+                      <StatRow label="Paramilitary" valA={countryA?.metrics.paramilitary} valB={countryB?.metrics.paramilitary} metricKey="paramilitary" />
                     </div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="h-3 w-full bg-muted/20 rounded-none overflow-hidden flex border border-border/50">
-                    <div className={cn("h-full transition-all duration-500", isAWinner ? "bg-primary" : "bg-muted-foreground/30")}
-                      style={{
-                        width: `${((scoreA?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
-                      }}
-                    />
-                    <div className={cn("h-full transition-all duration-500", isBWinner ? "bg-primary" : "bg-muted-foreground/30")}
-                      style={{
-                        width: `${((scoreB?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
-                      }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-[9px] font-mono text-muted-foreground uppercase tracking-widest">
-                    <span className={cn(isAWinner && "text-primary")}>Force A Share</span>
-                    <span className={cn(isBWinner && "text-primary")}>Force B Share</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card className="border-border/50 bg-card/30 rounded-none radar-chart-container">
-              <CardHeader className="bg-accent/5 border-b border-border/50">
-                <CardTitle className="text-xs font-mono uppercase tracking-wider">Capability Matrix</CardTitle>
-              </CardHeader>
-              <CardContent className="h-[340px] pt-6">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={radarData}>
-                    <PolarGrid stroke="#263047" strokeDasharray="3 3" />
-                    <PolarAngleAxis
-                      dataKey="category"
-                      tick={{
-                        fill: "#e2e8f0",
-                        fontSize: 11,
-                        fontFamily: "monospace",
-                        fontWeight: "bold",
-                      }}
-                    />
-                    <Radar 
-                      name={countryA?.name} 
-                      dataKey="A" 
-                      stroke={PRIMARY_COLOR} 
-                      fill={PRIMARY_COLOR} 
-                      fillOpacity={0.6} 
-                      strokeWidth={3} 
-                    />
-                    <Radar 
-                      name={countryB?.name} 
-                      dataKey="B" 
-                      stroke={BRAVO_COLOR} 
-                      fill={BRAVO_COLOR} 
-                      fillOpacity={0.4} 
-                      strokeWidth={3} 
-                    />
-                    <RechartsTooltip
-                      formatter={(val: number) => [val.toFixed(1), "Score"]}
-                      contentStyle={{
-                        backgroundColor: "#161b2b",
-                        border: "1px solid #fbbf24",
-                        color: "#ffffff",
-                        fontSize: "12px",
-                        fontFamily: "monospace",
-                        borderRadius: "0px",
-                        padding: "10px",
-                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
-                      }}
-                      itemStyle={{ 
-                        textTransform: "uppercase", 
-                        fontWeight: "bold",
-                        color: "#ffffff",
-                        padding: "2px 0"
-                      }}
-                      labelStyle={{
-                        color: "#fbbf24",
-                        marginBottom: "5px",
-                        fontWeight: "800",
-                        borderBottom: "1px solid #263047",
-                        paddingBottom: "3px"
-                      }}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+                    <div>
+                      <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                        <Plane className="w-3 h-3" /> Air Power
+                      </h3>
+                      <StatRow label="Total Aircraft" valA={countryA?.metrics.aircraft} valB={countryB?.metrics.aircraft} metricKey="aircraft" />
+                      <StatRow label="Fighter Jets" valA={countryA?.metrics.fighterJets} valB={countryB?.metrics.fighterJets} metricKey="fighterJets" />
+                      <StatRow label="Attack Helicopters" valA={countryA?.metrics.attackHelicopters} valB={countryB?.metrics.attackHelicopters} metricKey="attackHelicopters" />
+                    </div>
+
+                    <div>
+                      <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                        <Target className="w-3 h-3" /> Ground Forces
+                      </h3>
+                      <StatRow label="Main Battle Tanks" valA={countryA?.metrics.tanks} valB={countryB?.metrics.tanks} metricKey="tanks" />
+                      <StatRow label="Armored Vehicles" valA={countryA?.metrics.armoredVehicles} valB={countryB?.metrics.armoredVehicles} metricKey="armoredVehicles" />
+                      <StatRow label="Artillery Units" valA={countryA?.metrics.selfPropelledArtillery} valB={countryB?.metrics.selfPropelledArtillery} metricKey="selfPropelledArtillery" />
+                    </div>
+
+                    <div>
+                      <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                        <Anchor className="w-3 h-3" /> Naval Forces
+                      </h3>
+                      <StatRow label="Total Vessels" valA={countryA?.metrics.navalVessels} valB={countryB?.metrics.navalVessels} metricKey="navalVessels" />
+                      <StatRow label="Submarines" valA={countryA?.metrics.submarines} valB={countryB?.metrics.submarines} metricKey="submarines" />
+                      <StatRow label="Destroyers" valA={countryA?.metrics.destroyers} valB={countryB?.metrics.destroyers} metricKey="destroyers" />
+                    </div>
+
+                    <div>
+                      <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                        <Zap className="w-3 h-3" /> Strategic
+                      </h3>
+                      <StatRow label="Nuclear Warheads" valA={countryA?.metrics.nuclearWarheads} valB={countryB?.metrics.nuclearWarheads} metricKey="nuclearWarheads" format="number" />
+                    </div>
+
+                    <div>
+                      <h3 className="text-[10px] font-mono uppercase text-muted-foreground mb-3 tracking-widest border-l-2 border-primary pl-2 flex items-center gap-2">
+                        <DollarSign className="w-3 h-3" /> Economy
+                      </h3>
+                      <StatRow label="Defense Budget" valA={countryA?.metrics.defenseBudgetUsd} valB={countryB?.metrics.defenseBudgetUsd} format="currency" metricKey="defenseBudgetUsd" />
+                      <StatRow label="GDP" valA={countryA?.metrics.gdpUsd} valB={countryB?.metrics.gdpUsd} format="currency" metricKey="gdpUsd" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              <Card className="border-primary/20 bg-primary/5 rounded-none relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-2 opacity-10">
+                  <ShieldCheck className="w-24 h-24" />
+                </div>
+                <CardHeader>
+                  <CardTitle className="text-xs font-mono uppercase tracking-wider text-primary">Military Strength Index</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-8 relative z-10">
+                  <div className="grid grid-cols-2 gap-2 items-end">
+                    <div className="space-y-1 min-w-0">
+                      <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countryA?.name}</div>
+                      <div className={cn(
+                        "text-2xl sm:text-3xl xl:text-4xl font-black font-mono leading-none truncate",
+                        isAWinner ? "text-primary" : "text-muted-foreground"
+                      )}>
+                        {scoreA?.totalScore?.toFixed(2) ?? "0.00"}
+                      </div>
+                    </div>
+                    <div className="text-right space-y-1 min-w-0">
+                      <div className="text-[9px] sm:text-[10px] font-mono text-muted-foreground uppercase tracking-wider truncate">{countryB?.name}</div>
+                      <div className={cn(
+                        "text-2xl sm:text-3xl xl:text-4xl font-black font-mono leading-none truncate",
+                        isBWinner ? "" : "text-muted-foreground"
+                      )} style={isBWinner ? { color: BRAVO_COLOR } : {}}>
+                        {scoreB?.totalScore?.toFixed(2) ?? "0.00"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-3 w-full bg-muted/20 rounded-none overflow-hidden flex border border-border/50">
+                      <div className={cn("h-full transition-all duration-500", isAWinner ? "bg-primary" : "bg-muted-foreground/30")}
+                        style={{
+                          width: `${((scoreA?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
+                        }}
+                      />
+                      <div className={cn("h-full transition-all duration-500", isBWinner ? "bg-primary" : "bg-muted-foreground/30")}
+                        style={{
+                          width: `${((scoreB?.totalScore || 0) / ((scoreA?.totalScore || 0) + (scoreB?.totalScore || 0) || 1)) * 100}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[9px] font-mono text-muted-foreground uppercase tracking-widest">
+                      <span className={cn(isAWinner && "text-primary")}>Force A Share</span>
+                      <span className={cn(isBWinner && "text-primary")}>Force B Share</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border/50 bg-card/30 rounded-none radar-chart-container">
+                <CardHeader className="bg-accent/5 border-b border-border/50">
+                  <CardTitle className="text-xs font-mono uppercase tracking-wider">Capability Matrix</CardTitle>
+                </CardHeader>
+                <CardContent className="h-[340px] pt-6">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart data={radarData}>
+                      <PolarGrid stroke="#263047" strokeDasharray="3 3" />
+                      <PolarAngleAxis
+                        dataKey="category"
+                        tick={{
+                          fill: "#e2e8f0",
+                          fontSize: 11,
+                          fontFamily: "monospace",
+                          fontWeight: "bold",
+                        }}
+                      />
+                      <Radar 
+                        name={countryA?.name} 
+                        dataKey="A" 
+                        stroke={PRIMARY_COLOR} 
+                        fill={PRIMARY_COLOR} 
+                        fillOpacity={0.6} 
+                        strokeWidth={3} 
+                      />
+                      <Radar 
+                        name={countryB?.name} 
+                        dataKey="B" 
+                        stroke={BRAVO_COLOR} 
+                        fill={BRAVO_COLOR} 
+                        fillOpacity={0.4} 
+                        strokeWidth={3} 
+                      />
+                      <RechartsTooltip
+                        formatter={(val: number) => [val.toFixed(1), "Score"]}
+                        contentStyle={{
+                          backgroundColor: "#161b2b",
+                          border: "1px solid #fbbf24",
+                          color: "#ffffff",
+                          fontSize: "12px",
+                          fontFamily: "monospace",
+                          borderRadius: "0px",
+                          padding: "10px",
+                          boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
+                        }}
+                        itemStyle={{ 
+                          textTransform: "uppercase", 
+                          fontWeight: "bold",
+                          color: "#ffffff",
+                          padding: "2px 0"
+                        }}
+                        labelStyle={{
+                          color: "#fbbf24",
+                          marginBottom: "5px",
+                          fontWeight: "800",
+                          borderBottom: "1px solid #263047",
+                          paddingBottom: "3px"
+                        }}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+          
+          {/* Footer for export */}
+          <div className="hidden show-on-export pt-8 border-t border-border/30 flex justify-between items-end opacity-50">
+            <div className="text-[8px] font-mono uppercase tracking-widest">
+              Generated via STRATCOM.INTEL // Unified Force Projection Matrix v4.2.0
+            </div>
+            <div className="text-[8px] font-mono uppercase tracking-tighter">
+              Data Sources: IISS, SIPRI, GFP, FAS (2023-2024)
+            </div>
           </div>
         </div>
       </div>
