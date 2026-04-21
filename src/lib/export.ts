@@ -11,12 +11,11 @@ export async function exportElementAsImage(
   }
 
   try {
-    // We use a high scale for "retina" quality images
     const canvas = await html2canvas(element, {
       scale: 2,
-      backgroundColor: "#0b0f1a", // Matches theme background
+      backgroundColor: "#0b0f1a",
       logging: false,
-      useCORS: true, // Needed for external flags
+      useCORS: true,
     });
 
     const link = document.createElement("a");
