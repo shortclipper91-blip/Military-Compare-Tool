@@ -1,185 +1,326 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useMemo, useRef } from "react";
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
 import { Layout } from "@/components/layout";
 import { FlagIcon } from "@/components/flag-icon";
+import { useListCountries } from "@workspace/api-client-react";
+import { CountrySelector } from "@/components/country-selector";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Map as MapIcon, ZoomIn, ZoomOut, RotateCcw, ChevronDown, ChevronUp, List, Target, ShieldCheck, Zap, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Target, ZoomIn, ZoomOut, RotateCcw, X } from "lucide-react";
-
-/* -------------------------------------------------------------------------- */
-/*  SIMPLE MAP PAGE – renders a static world map with hover/click handling   */
-/* -------------------------------------------------------------------------- */
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
+const ISO2_TO_NUMERIC: Record<string, string> = {
+  US: "840", RU: "643", CN: "156", IN: "356", GB: "826", FR: "250",
+  DE: "276", JP: "392", KR: "410", TR: "792", PK: "586", IL: "376",
+  SA: "682", BR: "076", IT: "380", NO: "578", SE: "752", FI: "246",
+  PL: "616", UA: "804", AU: "036", CA: "124", KP: "408", EG: "818",
+  IR: "364", ES: "724", GR: "300", NL: "528", ID: "360", VN: "704",
+  TW: "158", PH: "608", TH: "764", NG: "566", ZA: "710", MX: "484",
+  AR: "032", RO: "642", BE: "056", PT: "620", DK: "208", MA: "504",
+  AZ: "031",
+};
+
+function computeScore(c: any): number {
+  const m = c.metrics;
+  return (
+    ((m.activePersonnel ?? 0) / 2035000) * 0.20 +
+    ((m.defenseBudgetUsd ?? 0) / 886e9) * 0.35 +
+    ((m.aircraft ?? 0) / 13300) * 0.15 +
+    ((m.tanks ?? 0) / 12420) * 0.10 +
+    ((m.navalVessels ?? 0) / 730) * 0.10 +
+    (Math.min(m.nuclearWarheads ?? 0, 1000) / 1000) * 0.10
+  );
+}
+
+function scoreToColor(score: number, alpha = 1): string {
+  if (score <= 0) return `rgba(30,41,59,${alpha})`;
+  const t = Math.min(score / 0.6, 1);
+  const r = Math.round(15 + t * (245 - 15));
+  const g = Math.round(23 + (1 - t) * (180 - 23));
+  const b = Math.round(42 + (1 - t) * (30 - 42));
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+const TIER_LABELS = [
+  { label: "Tier 1 — Global Power", min: 0.35 },
+  { label: "Tier 2 — Major Regional", min: 0.12 },
+  { label: "Tier 3 — Regional Power", min: 0.05 },
+  { label: "Tier 4 — Limited Force", min: 0 },
+];
+
+function getTier(score: number) {
+  for (const t of TIER_LABELS) {
+    if (score >= t.min) return t.label;
+  }
+  return TIER_LABELS[TIER_LABELS.length - 1].label;
+}
+
 export default function StrengthMap() {
+  const { data: countries = [], isLoading } = useListCountries();
   const [zoom, setZoom] = useState(1);
-  const [center, setCenter] = useState<[number, number]>([0, 20]);
+  const [center, setCenter] = useState<[number, number]>([10, 10]);
   const [selected, setSelected] = useState<string | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
+  const [showRankings, setShowRankings] = useState(false);
 
-  // Mock country data for immediate rendering (replace with real API later)
-  const mockCountries = [
-    { code: "US", name: "United States", score: 0.85 },
-    { code: "CN", name: "China", score: 0.78 },
-    { code: "RU", name: "Russia", score: 0.72 },
-    { code: "IN", name: "India", score: 0.65 },
-    { code: "GB", name: "United Kingdom", score: 0.60 },
-  ];
+  const scored = useMemo(() => {
+    const withScores = countries.map((c) => ({
+      ...c,
+      score: computeScore(c),
+    }));
+    withScores.sort((a, b) => b.score - a.score);
+    return withScores.map((c, i) => ({ ...c, rank: i + 1 }));
+  }, [countries]);
 
-  // Compute a simple color based on score
-  const colorFromScore = (score: number) => {
-    const t = Math.min(score, 1);
-    const r = Math.round(15 + t * (245 - 15));
-    const g = Math.round(23 + (1 - t) * (180 - 23));
-    const b = Math.round(42 + (1 - t) * (30 - 42));
-    return `rgba(${r},${g},${b},0.8)`;
-  };
+  const scoreMap = useMemo(() => {
+    const m: Record<string, { score: number; rank: number; code: string; name: string }> = {};
+    for (const c of scored) {
+      const num = ISO2_TO_NUMERIC[c.code];
+      if (num) m[num] = { score: c.score, rank: c.rank, code: c.code, name: c.name };
+    }
+    return m;
+  }, [scored]);
 
-  // Render a single geography element
-  const renderGeography = (geo: any) => {
-    const iso = Object.keys(geo).find((k) => geo[k] === geo.id);
-    const country = mockCountries.find((c) => c.code === iso);
-    const isSelected = selected && selected === iso;
-    const isHovered = hovered && hovered === iso;
-
-    return (
-      <Geography
-        key={geo.rsmKey}
-        geography={geo}
-        fill={isSelected ? "#fbbf24" : isHovered ? "#fbbf24" : colorFromScore(country?.score ?? 0)}
-        stroke={isSelected ? "#fff" : "#0f172a"}
-        strokeWidth={isSelected ? 1.5 : 0.5}
-        onMouseEnter={() => setHovered(iso)}
-        onMouseLeave={() => setHovered(null)}
-        onClick={() => setSelected(prev => prev === iso ? null : iso)}
-        style={{
-          default: {
-            outline: "none",
-          },
-          hover: {
-            cursor: "pointer",
-          },
-        }}
-      />
-    );
-  };
+  const focusedCountry = useMemo(() => {
+    const code = selected || hovered;
+    if (!code) return null;
+    const country = scored.find((c) => c.code === code);
+    if (!country) return null;
+    return {
+      ...country,
+      isLocked: !!selected
+    };
+  }, [selected, hovered, scored]);
 
   return (
     <Layout>
-      <div className="space-y-6">
-        {/* Header */}
+      <div className="space-y-4">
         <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold font-mono uppercase text-primary flex items-center gap-2">
-              <Target className="w-6 h-6 text-primary" />
-              Global Strength Index
+            <h1 className="text-xl font-bold font-mono tracking-tight text-foreground uppercase flex items-center gap-2">
+              <MapIcon className="w-5 h-5 text-primary" />
+              Global Strength Index Map
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Hover or click a nation to lock its tactical data
+            <p className="text-muted-foreground text-sm mt-0.5">
+              {scored.length} nations indexed · hover to inspect · click to lock
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z * 1.5, 8))} className="h-8 w-8">
-              <ZoomIn className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(z / 1.5, 1))} className="h-8 w-8">
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => { setZoom(1); setCenter([0, 20]); setSelected(null); }} className="h-8 w-8">
-              <RotateCcw className="w-4 h-4" />
-            </Button>
+          
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-card/50 p-2 border border-border/50 backdrop-blur-sm">
+            <CountrySelector
+              placeholder="Search Intel Database..."
+              value={selected || ""}
+              onChange={setSelected}
+              countries={scored}
+              className="w-full sm:w-64"
+            />
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => setZoom((z) => Math.min(z * 1.4, 8))}>
+                <ZoomIn className="w-4 h-4" />
+              </Button>
+              <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => setZoom((z) => Math.max(z / 1.4, 1))}>
+                <ZoomOut className="w-4 h-4" />
+              </Button>
+              <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => { setZoom(1); setCenter([10, 10]); setSelected(null); }}>
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </header>
 
-        {/* Map Container */}
-        <div className="relative h-[500px] w-full bg-background rounded-lg overflow-hidden">
-          <ComposableMap projectionConfig={{ scale: 140 }}>
-            <ZoomableGroup
-              zoom={zoom}
-              center={center}
-              onMoveEnd={({ zoom: z, coordinates }) => {
-                setZoom(z);
-                setCenter(coordinates as [number, number]);
-              }}
-            >
-              <Geographies geography={GEO_URL}>
-                {({ geographies }) => geographies.map(renderGeography)}
-              </Geographies>
-            </ZoomableGroup>
-          </ComposableMap>
-
-          {/* Fixed Target Profile Card – always visible above map */}
-          <div className="absolute bottom-4 left-4 right-4 max-w-md bg-card/50 border border-border/50 rounded-lg p-4 shadow-lg">
-            {selected ? (
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <FlagIcon code={selected} size={24} />
-                  <div className="flex flex-col">
-                    <span className="font-bold uppercase tracking-tighter text-sm italic leading-tight">
-                      {mockCountries.find(c => c.code === selected)?.name}
-                    </span>
-                    <span className="text-[8px] font-mono uppercase text-primary">
-                      Target Locked
-                    </span>
-                  </div>
-                </div>
-
-                <div className="text-3xl font-black text-primary leading-none">
-                  {(() => {
-                    const s = mockCountries.find(c => c.code === selected)?.score ?? 0;
-                    return (s * 100).toFixed(1);
-                  })()}
-                </div>
-
-                <div className="mt-2 flex items-center gap-2">
-                  <Target className="w-3 h-3 text-primary animate-pulse" />
-                  <span className="text-sm font-mono uppercase text-primary">
-                    Strength Index
-                  </span>
-                </div>
-
-                {/* Simple progress bar */}
-                <div className="mt-2 h-2 w-full bg-muted rounded-none overflow-hidden">
-                  <div
-                    className="h-2 bg-primary shadow-[0_0_8px_rgba(251,191,36,0.5)] transition-all duration-300"
-                    style={{ width: `${Math.min((mockCountries.find(c => c.code === selected)?.score ?? 0) * 200, 100)}%` }}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="text-center space-y-2">
-                <div className="w-12 h-12 rounded-full border border-border flex items-center justify-center">
-                  <Target className="w-6 h-6 text-muted-foreground" />
-                </div>
-                <p className="text-sm font-mono uppercase text-muted-foreground">
-                  No nation selected – hover or click a region
-                </p>
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-4">
+          <Card className="border-border/50 bg-card/40 backdrop-blur-sm overflow-hidden relative min-h-[500px]">
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center z-10 bg-background/80">
+                <span className="font-mono text-sm text-muted-foreground animate-pulse">LOADING INTEL...</span>
               </div>
             )}
-          </div>
-        </div>
 
-        {/* Simple Instructions */}
-        <div className="mt-4 p-3 bg-background/50 rounded-lg border border-border/50">
-          <p className="text-sm font-mono text-muted-foreground">
-            • Move map to explore • Click a nation to lock its data • Use +/- buttons to zoom
-          </p>
+            <ComposableMap
+              projection="geoNaturalEarth1"
+              projectionConfig={{ scale: 147 }}
+              style={{ width: "100%", height: "auto" }}
+            >
+              <ZoomableGroup
+                zoom={zoom}
+                center={center}
+                onMoveEnd={({ zoom: z, coordinates }) => {
+                  setZoom(z);
+                  setCenter(coordinates as [number, number]);
+                }}
+              >
+                <Geographies geography={GEO_URL}>
+                  {({ geographies }) =>
+                    geographies.map((geo) => {
+                      const id = geo.id as string;
+                      const info = scoreMap[id];
+                      const isSelected = selected && info && selected === info.code;
+                      return (
+                        <Geography
+                          key={geo.rsmKey}
+                          geography={geo}
+                          onMouseEnter={() => {
+                            if (info) setHovered(info.code);
+                          }}
+                          onMouseLeave={() => setHovered(null)}
+                          onClick={() => {
+                            if (info) setSelected(info.code === selected ? null : info.code);
+                          }}
+                          style={{
+                            default: {
+                              fill: isSelected ? "#fbbf24" : (info ? scoreToColor(info.score) : "#1a2235"),
+                              stroke: isSelected ? "#ffffff" : "#0f172a",
+                              strokeWidth: isSelected ? 1.5 : 0.5,
+                              outline: "none",
+                            },
+                            hover: {
+                              fill: info ? "#fbbf24" : "#263047",
+                              stroke: "#ffffff",
+                              strokeWidth: 1,
+                              outline: "none",
+                              cursor: info ? "pointer" : "default",
+                            },
+                            pressed: {
+                              fill: "#f59e0b",
+                              outline: "none",
+                            },
+                          }}
+                        />
+                      );
+                    })
+                  }
+                </Geographies>
+              </ZoomableGroup>
+            </ComposableMap>
+
+            <div className="absolute bottom-3 left-3 flex flex-col gap-1">
+              <div className="text-[10px] font-mono text-muted-foreground mb-1 uppercase tracking-wider">Strength Index</div>
+              <div className="flex items-center gap-2">
+                <div className="w-32 h-2 rounded-sm" style={{
+                  background: "linear-gradient(to right, #1e2a3a, #8b2800, #f59e0b)"
+                }} />
+                <div className="flex justify-between w-32 text-[8px] font-mono text-muted-foreground -mt-3">
+                  <span>Low</span>
+                  <span>High</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <div className="space-y-4">
+            {/* Target Profile Card */}
+            <Card className={cn(
+              "border-2 transition-all duration-300 min-h-[240px] flex flex-col justify-center",
+              focusedCountry ? "border-primary/40 bg-primary/5 shadow-[0_0_20px_rgba(251,191,36,0.1)]" : "border-border/50 bg-card/30 border-dashed"
+            )}>
+              {focusedCountry ? (
+                <div className="p-4 space-y-4 animate-in fade-in zoom-in-95 duration-300">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <FlagIcon code={focusedCountry.code} size={28} />
+                      <div className="flex flex-col">
+                        <span className="font-bold uppercase tracking-tighter text-sm italic leading-tight">{focusedCountry.name}</span>
+                        <span className="text-[8px] font-mono text-primary uppercase tracking-[0.2em]">Rank: #{focusedCountry.rank}</span>
+                      </div>
+                    </div>
+                    {focusedCountry.isLocked && (
+                      <button 
+                        onClick={() => setSelected(null)}
+                        className="p-1 text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Zap className="w-3 h-3 text-primary" />
+                        <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-[0.2em]">Strength Index</div>
+                      </div>
+                      <div className="text-4xl font-black font-mono text-primary leading-none tabular-nums">
+                        {(focusedCountry.score * 100).toFixed(1)}
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-border/50">
+                      <div className="flex justify-between items-center mb-1.5">
+                        <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Capabilities Tier</div>
+                        <span className="text-[10px] font-mono font-bold text-primary">
+                          {getTier(focusedCountry.score).split('—')[0]}
+                        </span>
+                      </div>
+                      <div className="h-1.5 w-full bg-muted/20 rounded-none overflow-hidden flex border border-border/50">
+                        <div 
+                          className="h-full bg-primary shadow-[0_0_10px_rgba(251,191,36,0.5)] transition-all duration-500" 
+                          style={{ width: `${Math.min(focusedCountry.score * 200, 100)}%` }} 
+                        />
+                      </div>
+                    </div>
+                    
+                    {!focusedCountry.isLocked && (
+                      <div className="flex items-center gap-2 justify-center py-1 bg-primary/10 border border-primary/20">
+                        <Target className="w-3 h-3 text-primary animate-pulse" />
+                        <span className="text-[8px] font-mono text-primary font-bold uppercase tracking-widest">Click Map to Lock Data</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6 flex flex-col items-center text-center space-y-3 opacity-30">
+                  <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center">
+                    <Target className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-mono uppercase tracking-widest">No Active Target</p>
+                    <p className="text-[8px] font-mono leading-relaxed">Hover or select a region to populate tactical data</p>
+                  </div>
+                </div>
+              )}
+            </Card>
+
+            {/* Map Intelligence Card */}
+            <Card className="border-border/50 bg-card/40 p-3">
+              <button
+                className="xl:hidden w-full flex items-center justify-between mb-2"
+                onClick={() => setShowRankings((s) => !s)}
+              >
+                <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground uppercase tracking-wider">
+                  <List className="w-3 h-3" />
+                  Global Rankings ({scored.length})
+                </div>
+                {showRankings ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+              </button>
+              <div className="hidden xl:block text-xs font-mono text-muted-foreground uppercase tracking-wider mb-3">Global Rankings</div>
+
+              <div className={`space-y-1 overflow-y-auto max-h-[300px] ${showRankings ? "block" : "hidden xl:block"}`}>
+                {scored.map((c) => (
+                  <button
+                    key={c.code}
+                    onClick={() => setSelected(c.code === selected ? null : c.code)}
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left transition-colors ${
+                      selected === c.code ? "bg-primary/20 border border-primary/30" : "hover:bg-accent/50"
+                    }`}
+                  >
+                    <span className="text-[10px] font-mono text-muted-foreground w-5 shrink-0">#{c.rank}</span>
+                    <FlagIcon code={c.code} size={20} />
+                    <span className="text-[10px] font-mono text-foreground flex-1 truncate uppercase">{c.name}</span>
+                    <span className="text-[10px] font-mono text-primary w-8 text-right shrink-0">
+                      {(c.score * 100).toFixed(0)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
     </Layout>
   );
 }
-
-/* -------------------------------------------------------------------------- */
-/*  Mock data – replace with real API call when ready                         */
-/* -------------------------------------------------------------------------- */
-const mockCountries = [
-  { code: "US", name: "United States", score: 0.85 },
-  { code: "CN", name: "China", score: 0.78 },
-  { code: "RU", name: "Russia", score: 0.72 },
-  { code: "IN", name: "India", score: 0.65 },
-  { code: "GB", name: "United Kingdom", score: 0.60 },
-];
