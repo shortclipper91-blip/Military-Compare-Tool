@@ -23,10 +23,12 @@ import {
   DollarSign, 
   Zap, 
   Radiation, 
-  Shield 
+  Shield,
+  Download
 } from "lucide-react";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { exportElementAsImage } from "@/lib/export";
 
 const AggregateStat = ({ icon: Icon, label, valA, valB, format = "compact" }: any) => {
   const isAWinner = (valA || 0) > (valB || 0);
@@ -58,6 +60,7 @@ export default function Coalition() {
   const [teamB, setTeamB] = useState<string[]>(["CN", "RU"]);
   const [isSimulating, setIsSimulating] = useState(false);
   const [hasSimulated, setHasSimulated] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     setHasSimulated(false);
@@ -142,6 +145,14 @@ export default function Coalition() {
     }, 1800);
   };
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    setTimeout(async () => {
+      await exportElementAsImage("coalition-briefing", "STRATCOM_Coalition_Report.png");
+      setIsExporting(false);
+    }, 100);
+  };
+
   const TeamPanel = ({ team, setTeam, label, color, totalScore, hasSimulated, isWinner }: any) => (
     <Card className="border-border/50 bg-card/30">
       <CardHeader className="border-b border-border/50 flex flex-row items-center justify-between">
@@ -200,111 +211,137 @@ export default function Coalition() {
             <h1 className="text-4xl font-black tracking-tighter uppercase italic">Coalition Builder</h1>
             <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest">Aggregate Force Projection Simulator</p>
           </div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  onClick={handleRandomize}
-                  className="h-12 w-12 border-border/50 hover:border-primary/50 hover:text-primary bg-primary/5"
-                >
-                  <Dices className="w-6 h-6" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Randomize Coalitions</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <div className="flex items-center gap-3">
+             {hasSimulated && (
+              <Button
+                variant="outline"
+                onClick={handleExport}
+                disabled={isExporting}
+                className="h-12 px-6 rounded-none border-primary/30 bg-primary/5 text-primary hover:bg-primary/20 hover:border-primary font-mono text-xs uppercase tracking-widest gap-2 hidden sm:flex"
+              >
+                {isExporting ? <span className="animate-pulse">Capturing...</span> : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    Export Briefing
+                  </>
+                )}
+              </Button>
+            )}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={handleRandomize}
+                    className="h-12 w-12 border-border/50 hover:border-primary/50 hover:text-primary bg-primary/5"
+                  >
+                    <Dices className="w-6 h-6" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Randomize Coalitions</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <TeamPanel 
-            team={teamA} 
-            setTeam={setTeamA} 
-            label="Coalition Alpha" 
-            color="text-foreground" 
-            totalScore={scoreA?.totalScore || 0}
-            hasSimulated={hasSimulated}
-            isWinner={isWinnerA}
-          />
-          <TeamPanel 
-            team={teamB} 
-            setTeam={setTeamB} 
-            label="Coalition Bravo" 
-            color="text-primary" 
-            totalScore={scoreB?.totalScore || 0}
-            hasSimulated={hasSimulated}
-            isWinner={isWinnerB}
-          />
-        </div>
+        <div id="coalition-briefing" className="space-y-8 p-1 -m-1">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <TeamPanel 
+              team={teamA} 
+              setTeam={setTeamA} 
+              label="Coalition Alpha" 
+              color="text-foreground" 
+              totalScore={scoreA?.totalScore || 0}
+              hasSimulated={hasSimulated}
+              isWinner={isWinnerA}
+            />
+            <TeamPanel 
+              team={teamB} 
+              setTeam={setTeamB} 
+              label="Coalition Bravo" 
+              color="text-primary" 
+              totalScore={scoreB?.totalScore || 0}
+              hasSimulated={hasSimulated}
+              isWinner={isWinnerB}
+            />
+          </div>
 
-        <div className="relative group">
-          <Card className={`border-2 transition-all duration-500 overflow-hidden ${hasSimulated ? 'border-primary/40 bg-primary/5' : 'border-border/50 bg-card/30'}`}>
-            <CardContent className="p-0">
-              {!hasSimulated && !isSimulating ? (
-                <button 
-                  onClick={executeSimulation}
-                  disabled={teamA.length === 0 || teamB.length === 0}
-                  className="w-full p-12 flex flex-col items-center justify-center space-y-4 hover:bg-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
-                >
-                  <div className="w-16 h-16 rounded-full border border-primary/30 flex items-center justify-center group-hover:scale-110 group-hover:border-primary transition-transform">
-                    <Play className="w-6 h-6 text-primary fill-primary/20 ml-1" />
-                  </div>
-                  <div className="space-y-1">
-                    <h2 className="text-xl font-black uppercase italic tracking-wider">Execute Simulation</h2>
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Awaiting Command Authorization</p>
-                  </div>
-                </button>
-              ) : isSimulating ? (
-                <div className="p-12 flex flex-col items-center justify-center space-y-6 animate-pulse">
-                  <Loader2 className="w-12 h-12 text-primary animate-spin" />
-                  <div className="space-y-2 text-center">
-                    <h2 className="text-xl font-black uppercase italic tracking-wider">Processing Matrix</h2>
-                    <p className="text-[10px] font-mono text-primary uppercase tracking-[0.4em]">Analyzing Combined Capabilities...</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-8 flex flex-col items-center text-center space-y-8 animate-in fade-in zoom-in-95 duration-500">
-                  <div className="flex flex-col items-center gap-4">
-                    <Trophy className="w-12 h-12 text-primary animate-bounce" />
-                    <h2 className="text-2xl font-black uppercase italic">Simulation Result</h2>
-                    <div className="text-4xl sm:text-5xl font-black font-mono uppercase text-primary">
-                      {scoreA.totalScore > scoreB.totalScore ? "Alpha Dominance" : "Bravo Dominance"}
-                    </div>
-                  </div>
-
-                  <div className="w-full max-w-2xl bg-background/40 border border-border/50 p-6 rounded-none space-y-1">
-                    <div className="flex justify-between px-2 mb-4 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                      <span>Coalition Alpha</span>
-                      <span>Tactical Metrics</span>
-                      <span>Coalition Bravo</span>
-                    </div>
-                    <AggregateStat icon={Users} label="Total Personnel" valA={metricsA.activePersonnel} valB={metricsB.activePersonnel} />
-                    <AggregateStat icon={Plane} label="Total Aircraft" valA={metricsA.aircraft} valB={metricsB.aircraft} />
-                    <AggregateStat icon={Zap} label="Fighter Jets" valA={metricsA.fighterJets} valB={metricsB.fighterJets} />
-                    <AggregateStat icon={Target} label="Main Battle Tanks" valA={metricsA.tanks} valB={metricsB.tanks} />
-                    <AggregateStat icon={Anchor} label="Naval Assets" valA={metricsA.navalVessels} valB={metricsB.navalVessels} />
-                    <AggregateStat icon={Shield} label="Submarines" valA={metricsA.submarines} valB={metricsB.submarines} />
-                    <AggregateStat icon={Radiation} label="Nuclear Warheads" valA={metricsA.nuclearWarheads} valB={metricsB.nuclearWarheads} format="number" />
-                    <AggregateStat icon={DollarSign} label="Defense Budget" valA={metricsA.defenseBudgetUsd} valB={metricsB.defenseBudgetUsd} format="currency" />
-                  </div>
-
-                  <p className="text-muted-foreground font-mono text-xs uppercase tracking-tighter">
-                    Aggregate strength differential: {Math.abs(scoreA.totalScore - scoreB.totalScore).toFixed(2)} Index Points
-                  </p>
-                  
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setHasSimulated(false)}
-                    className="mt-2 text-[9px] font-mono uppercase tracking-widest text-muted-foreground hover:text-primary"
+          <div className="relative group">
+            <Card className={`border-2 transition-all duration-500 overflow-hidden ${hasSimulated ? 'border-primary/40 bg-primary/5' : 'border-border/50 bg-card/30'}`}>
+              <CardContent className="p-0">
+                {!hasSimulated && !isSimulating ? (
+                  <button 
+                    onClick={executeSimulation}
+                    disabled={teamA.length === 0 || teamB.length === 0}
+                    className="w-full p-12 flex flex-col items-center justify-center space-y-4 hover:bg-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
                   >
-                    Reset Simulation
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    <div className="w-16 h-16 rounded-full border border-primary/30 flex items-center justify-center group-hover:scale-110 group-hover:border-primary transition-transform">
+                      <Play className="w-6 h-6 text-primary fill-primary/20 ml-1" />
+                    </div>
+                    <div className="space-y-1">
+                      <h2 className="text-xl font-black uppercase italic tracking-wider">Execute Simulation</h2>
+                      <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Awaiting Command Authorization</p>
+                    </div>
+                  </button>
+                ) : isSimulating ? (
+                  <div className="p-12 flex flex-col items-center justify-center space-y-6 animate-pulse">
+                    <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                    <div className="space-y-2 text-center">
+                      <h2 className="text-xl font-black uppercase italic tracking-wider">Processing Matrix</h2>
+                      <p className="text-[10px] font-mono text-primary uppercase tracking-[0.4em]">Analyzing Combined Capabilities...</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-8 flex flex-col items-center text-center space-y-8 animate-in fade-in zoom-in-95 duration-500">
+                    <div className="flex flex-col items-center gap-4">
+                      <Trophy className="w-12 h-12 text-primary animate-bounce" />
+                      <h2 className="text-2xl font-black uppercase italic">Simulation Result</h2>
+                      <div className="text-4xl sm:text-5xl font-black font-mono uppercase text-primary">
+                        {scoreA.totalScore > scoreB.totalScore ? "Alpha Dominance" : "Bravo Dominance"}
+                      </div>
+                    </div>
+
+                    <div className="w-full max-w-2xl bg-background/40 border border-border/50 p-6 rounded-none space-y-1">
+                      <div className="flex justify-between px-2 mb-4 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                        <span>Coalition Alpha</span>
+                        <span>Tactical Metrics</span>
+                        <span>Coalition Bravo</span>
+                      </div>
+                      <AggregateStat icon={Users} label="Total Personnel" valA={metricsA.activePersonnel} valB={metricsB.activePersonnel} />
+                      <AggregateStat icon={Plane} label="Total Aircraft" valA={metricsA.aircraft} valB={metricsB.aircraft} />
+                      <AggregateStat icon={Zap} label="Fighter Jets" valA={metricsA.fighterJets} valB={metricsB.fighterJets} />
+                      <AggregateStat icon={Target} label="Main Battle Tanks" valA={metricsA.tanks} valB={metricsB.tanks} />
+                      <AggregateStat icon={Anchor} label="Naval Assets" valA={metricsA.navalVessels} valB={metricsB.navalVessels} />
+                      <AggregateStat icon={Shield} label="Submarines" valA={metricsA.submarines} valB={metricsB.submarines} />
+                      <AggregateStat icon={Radiation} label="Nuclear Warheads" valA={metricsA.nuclearWarheads} valB={metricsB.nuclearWarheads} format="number" />
+                      <AggregateStat icon={DollarSign} label="Defense Budget" valA={metricsA.defenseBudgetUsd} valB={metricsB.defenseBudgetUsd} format="currency" />
+                    </div>
+
+                    <p className="text-muted-foreground font-mono text-xs uppercase tracking-tighter">
+                      Aggregate strength differential: {Math.abs(scoreA.totalScore - scoreB.totalScore).toFixed(2)} Index Points
+                    </p>
+                    
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setHasSimulated(false)}
+                      className="mt-2 text-[9px] font-mono uppercase tracking-widest text-muted-foreground hover:text-primary no-export"
+                    >
+                      Reset Simulation
+                    </Button>
+
+                    <div className="pt-8 opacity-20 w-full border-t border-border/50">
+                      <div className="flex justify-between items-center px-2">
+                        <span className="text-[8px] font-mono uppercase tracking-[0.4em]">STRATCOM.INTEL // COALITION ANALYSIS</span>
+                        <span className="text-[8px] font-mono uppercase tracking-[0.4em]">AUTH: {new Date().toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </Layout>
