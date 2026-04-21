@@ -6,26 +6,45 @@ import { FlagIcon } from "@/components/flag-icon";
 import { CountrySelector } from "@/components/CountrySelector";
 import { COUNTRIES_DATA, Country } from "@/lib/countryData";
 import { calculateScores } from "@/lib/scoring";
-import { formatCompact, formatCurrency } from "@/lib/format";
+import { formatCompact, formatCurrency, formatNumber } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, Swords, Dices, Loader2, Play, Trophy, Users, Plane, Target, Anchor, DollarSign } from "lucide-react";
+import { 
+  X, 
+  Swords, 
+  Dices, 
+  Loader2, 
+  Play, 
+  Trophy, 
+  Users, 
+  Plane, 
+  Target, 
+  Anchor, 
+  DollarSign, 
+  Zap, 
+  Radiation, 
+  Shield 
+} from "lucide-react";
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 const AggregateStat = ({ icon: Icon, label, valA, valB, format = "compact" }: any) => {
   const isAWinner = (valA || 0) > (valB || 0);
   const isBWinner = (valB || 0) > (valA || 0);
-  const fmt = (v: number) => format === "currency" ? formatCurrency(v) : formatCompact(v);
+  const fmt = (v: number) => {
+    if (format === "currency") return formatCurrency(v);
+    if (format === "number") return formatNumber(v);
+    return formatCompact(v);
+  };
 
   return (
-    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 py-3 border-b border-border/20 last:border-0">
+    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 py-3 border-b border-border/20 last:border-0 group hover:bg-primary/5 transition-colors px-2 -mx-2">
       <div className={cn("text-right font-mono text-sm", isAWinner ? "text-primary font-bold" : "text-muted-foreground")}>
         {fmt(valA || 0)}
       </div>
       <div className="flex flex-col items-center gap-1 w-32">
-        <Icon className="w-3.5 h-3.5 text-muted-foreground/40" />
-        <span className="text-[9px] font-mono uppercase text-muted-foreground/60 tracking-tighter text-center">{label}</span>
+        <Icon className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-primary/40 transition-colors" />
+        <span className="text-[9px] font-mono uppercase text-muted-foreground/60 tracking-tighter text-center group-hover:text-muted-foreground transition-colors">{label}</span>
       </div>
       <div className={cn("text-left font-mono text-sm", isBWinner ? "text-primary font-bold" : "text-muted-foreground")}>
         {fmt(valB || 0)}
@@ -254,16 +273,19 @@ export default function Coalition() {
                     </div>
                   </div>
 
-                  <div className="w-full max-w-2xl bg-background/40 border border-border/50 p-6 rounded-none space-y-2">
+                  <div className="w-full max-w-2xl bg-background/40 border border-border/50 p-6 rounded-none space-y-1">
                     <div className="flex justify-between px-2 mb-4 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                      <span>Coalition Alpha Total</span>
+                      <span>Coalition Alpha</span>
                       <span>Tactical Metrics</span>
-                      <span>Coalition Bravo Total</span>
+                      <span>Coalition Bravo</span>
                     </div>
                     <AggregateStat icon={Users} label="Total Personnel" valA={metricsA.activePersonnel} valB={metricsB.activePersonnel} />
                     <AggregateStat icon={Plane} label="Total Aircraft" valA={metricsA.aircraft} valB={metricsB.aircraft} />
+                    <AggregateStat icon={Zap} label="Fighter Jets" valA={metricsA.fighterJets} valB={metricsB.fighterJets} />
                     <AggregateStat icon={Target} label="Main Battle Tanks" valA={metricsA.tanks} valB={metricsB.tanks} />
                     <AggregateStat icon={Anchor} label="Naval Assets" valA={metricsA.navalVessels} valB={metricsB.navalVessels} />
+                    <AggregateStat icon={Shield} label="Submarines" valA={metricsA.submarines} valB={metricsB.submarines} />
+                    <AggregateStat icon={Radiation} label="Nuclear Warheads" valA={metricsA.nuclearWarheads} valB={metricsB.nuclearWarheads} format="number" />
                     <AggregateStat icon={DollarSign} label="Defense Budget" valA={metricsA.defenseBudgetUsd} valB={metricsB.defenseBudgetUsd} format="currency" />
                   </div>
 
