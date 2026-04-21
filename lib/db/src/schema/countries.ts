@@ -1,4 +1,4 @@
-import { pgTable, text, serial, real, bigint, jsonb, index } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, real, bigint, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -32,12 +32,6 @@ export const countriesTable = pgTable("countries", {
   aircraftCarriers: bigint("aircraft_carriers", { mode: "number" }),
   nuclearWarheads: bigint("nuclear_warheads", { mode: "number" }),
   dataSources: jsonb("data_sources").notNull().$type<Array<{metric: string; source: string; confidence: string; lastUpdated: string}>>().default([]),
-}, (table) => {
-  return {
-    continentIdx: index("continent_idx").on(table.continent),
-    regionIdx: index("region_idx").on(table.region),
-    nameIdx: index("name_idx").on(table.name),
-  };
 });
 
 export const insertCountrySchema = createInsertSchema(countriesTable).omit({ id: true });

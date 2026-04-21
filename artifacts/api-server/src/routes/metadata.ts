@@ -1,34 +1,36 @@
 import { Router, type IRouter } from "express";
-import { sql } from "drizzle-orm";
 import { db, countriesTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
 router.get("/metadata/alliances", async (_req, res): Promise<void> => {
-  // Use a specialized query to get distinct alliance strings from the jsonb array
-  const result = await db.execute(sql`
-    SELECT DISTINCT jsonb_array_elements_text(${countriesTable.alliances}) as alliance 
-    FROM ${countriesTable}
-    ORDER BY alliance
-  `);
-  
-  const alliances = result.rows.map(row => row.alliance as string).filter(Boolean);
-  res.json(alliances);
+  const countries = await db.select({ alliances: countriesTable.alliances }).from(countriesTable);
+  const allianceSet = new Set<string>();
+  for (const c of countries) {
+    const alliances = c.alliances as string[];
+    for (const a of alliances) {
+      if (a) allianceSet.add(a);
+    }
+  }
+  res.json([...allianceSet].sort());
 });
 
 router.get("/metadata/regions", async (_req, res): Promise<void> => {
-  // Get distinct continents and regions efficiently
-  const continentsResult = await db.selectDistinct({ 
-    continent: countriesTable.continent 
-  }).from(countriesTable).orderBy(countriesTable.continent);
-  
-  const regionsResult = await db.selectDistinct({ 
-    region: countriesTable.region 
-  }).from(countriesTable).orderBy(countriesTable.region);
+  const countries = await db.select({
+    continent: countriesTable.continent,
+    region: countriesTable.region,
+  }).from(countriesTable);
+
+  const continentSet = new Set<string>();
+  const regionSet = new Set<string>();
+  for (const c of countries) {
+    if (c.continent) continentSet.add(c.continent);
+    if (c.region) regionSet.add(c.region);
+  }
 
   res.json({
-    continents: continentsResult.map(r => r.continent).filter(Boolean),
-    regions: regionsResult.map(r => r.region).filter(Boolean),
+    continents: [...continentSet].sort(),
+    regions: [...regionSet].sort(),
   });
 });
 
