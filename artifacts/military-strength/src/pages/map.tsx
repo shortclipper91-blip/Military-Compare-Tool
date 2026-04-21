@@ -1,12 +1,16 @@
+"use client";
+
 import { useState, useMemo, useRef } from "react";
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
 import { Layout } from "@/components/layout";
 import { FlagIcon } from "@/components/flag-icon";
 import { useListCountries } from "@workspace/api-client-react";
-import { Card } from "@/components/ui/card";
+import { CountrySelector } from "@/components/country-selector";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Map, ZoomIn, ZoomOut, RotateCcw, ChevronDown, ChevronUp, List } from "lucide-react";
+import { Map as MapIcon, ZoomIn, ZoomOut, RotateCcw, ChevronDown, ChevronUp, List, Target, ShieldCheck, Zap, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -21,16 +25,7 @@ const ISO2_TO_NUMERIC: Record<string, string> = {
   AZ: "031",
 };
 
-function computeScore(c: {
-  metrics: {
-    activePersonnel?: number | null;
-    defenseBudgetUsd?: number | null;
-    aircraft?: number | null;
-    tanks?: number | null;
-    navalVessels?: number | null;
-    nuclearWarheads?: number | null;
-  };
-}): number {
+function computeScore(c: any): number {
   const m = c.metrics;
   return (
     ((m.activePersonnel ?? 0) / 2035000) * 0.20 +
@@ -65,78 +60,13 @@ function getTier(score: number) {
   return TIER_LABELS[TIER_LABELS.length - 1].label;
 }
 
-function CountryDetailCard({
-  country,
-  onClose,
-  className,
-  cardRef,
-}: {
-  country: { code: string; name: string; rank: number; score: number; metrics: Record<string, number | null | undefined> };
-  onClose: () => void;
-  className?: string;
-  cardRef?: React.RefObject<HTMLDivElement>;
-}) {
-  return (
-    <Card ref={cardRef} className={`border-primary/40 bg-card/60 p-4 space-y-2 ${className ?? ""}`}>
-      <div className="flex items-start justify-between">
-        <div>
-          <FlagIcon code={country.code} size={40} className="rounded" />
-          <div className="font-bold font-mono text-foreground mt-1">{country.name}</div>
-          <Badge variant="outline" className="text-primary border-primary/50 text-xs mt-1">
-            #{country.rank} Globally · {getTier(country.score)}
-          </Badge>
-        </div>
-        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground" onClick={onClose}>✕</Button>
-      </div>
-      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/50">
-        {[
-          { label: "Personnel", value: ((country.metrics.activePersonnel ?? 0) / 1000).toFixed(0) + "K" },
-          { label: "Defense Budget", value: "$" + ((country.metrics.defenseBudgetUsd ?? 0) / 1e9).toFixed(0) + "B" },
-          { label: "Aircraft", value: (country.metrics.aircraft ?? 0).toLocaleString() },
-          { label: "Tanks", value: (country.metrics.tanks ?? 0).toLocaleString() },
-          { label: "Naval Vessels", value: (country.metrics.navalVessels ?? 0).toLocaleString() },
-          { label: "Nuclear", value: (country.metrics.nuclearWarheads ?? 0) > 0 ? (country.metrics.nuclearWarheads ?? 0).toLocaleString() : "None" },
-        ].map(({ label, value }) => (
-          <div key={label}>
-            <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">{label}</div>
-            <div className="text-sm font-bold text-foreground font-mono">{value}</div>
-          </div>
-        ))}
-      </div>
-      <div className="pt-1">
-        <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Strength Index</div>
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-            <div
-              className="h-full rounded-full"
-              style={{ width: `${Math.min(country.score * 200, 100)}%`, background: scoreToColor(country.score) }}
-            />
-          </div>
-          <span className="text-xs font-mono text-primary font-bold">{(country.score * 100).toFixed(1)}</span>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
 export default function StrengthMap() {
   const { data: countries = [], isLoading } = useListCountries();
-  const [tooltip, setTooltip] = useState<{ name: string; code: string; score: number; rank: number } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [center, setCenter] = useState<[number, number]>([10, 10]);
   const [selected, setSelected] = useState<string | null>(null);
+  const [hovered, setHovered] = useState<string | null>(null);
   const [showRankings, setShowRankings] = useState(false);
-  const mobileDetailRef = useRef<HTMLDivElement>(null);
-
-  const selectCountry = (code: string | null) => {
-    setSelected((prev) => {
-      const next = prev === code ? null : code;
-      if (next) {
-        setTimeout(() => mobileDetailRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
-      }
-      return next;
-    });
-  };
 
   const scored = useMemo(() => {
     const withScores = countries.map((c) => ({
@@ -156,36 +86,55 @@ export default function StrengthMap() {
     return m;
   }, [scored]);
 
-  const selectedCountry = selected ? scored.find((c) => c.code === selected) : null;
+  const focusedCountry = useMemo(() => {
+    const code = selected || hovered;
+    if (!code) return null;
+    const country = scored.find((c) => c.code === code);
+    if (!country) return null;
+    return {
+      ...country,
+      isLocked: !!selected
+    };
+  }, [selected, hovered, scored]);
 
   return (
     <Layout>
       <div className="space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-3">
+        <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold font-mono tracking-tight text-foreground uppercase flex items-center gap-2">
-              <Map className="w-5 h-5 text-primary" />
+              <MapIcon className="w-5 h-5 text-primary" />
               Global Strength Index Map
             </h1>
             <p className="text-muted-foreground text-sm mt-0.5">
               {scored.length} nations indexed · hover to inspect · click to lock
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => setZoom((z) => Math.min(z * 1.4, 8))}>
-              <ZoomIn className="w-4 h-4" />
-            </Button>
-            <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => setZoom((z) => Math.max(z / 1.4, 1))}>
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-            <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => { setZoom(1); setCenter([10, 10]); selectCountry(null); }}>
-              <RotateCcw className="w-4 h-4" />
-            </Button>
+          
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-card/50 p-2 border border-border/50 backdrop-blur-sm">
+            <CountrySelector
+              placeholder="Search Intel Database..."
+              value={selected || ""}
+              onChange={setSelected}
+              countries={scored}
+              className="w-full sm:w-64"
+            />
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => setZoom((z) => Math.min(z * 1.4, 8))}>
+                <ZoomIn className="w-4 h-4" />
+              </Button>
+              <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => setZoom((z) => Math.max(z / 1.4, 1))}>
+                <ZoomOut className="w-4 h-4" />
+              </Button>
+              <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={() => { setZoom(1); setCenter([10, 10]); setSelected(null); }}>
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-        </div>
+        </header>
 
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-4">
-          <Card className="border-border/50 bg-card/40 backdrop-blur-sm overflow-hidden relative">
+          <Card className="border-border/50 bg-card/40 backdrop-blur-sm overflow-hidden relative min-h-[500px]">
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center z-10 bg-background/80">
                 <span className="font-mono text-sm text-muted-foreground animate-pulse">LOADING INTEL...</span>
@@ -202,7 +151,7 @@ export default function StrengthMap() {
                 center={center}
                 onMoveEnd={({ zoom: z, coordinates }) => {
                   setZoom(z);
-                  setCenter(coordinates);
+                  setCenter(coordinates as [number, number]);
                 }}
               >
                 <Geographies geography={GEO_URL}>
@@ -210,42 +159,34 @@ export default function StrengthMap() {
                     geographies.map((geo) => {
                       const id = geo.id as string;
                       const info = scoreMap[id];
-                      const isSelected = selected && info && scored.find((c) => c.code === selected && ISO2_TO_NUMERIC[c.code] === id);
+                      const isSelected = selected && info && selected === info.code;
                       return (
                         <Geography
                           key={geo.rsmKey}
                           geography={geo}
                           onMouseEnter={() => {
-                            if (info) setTooltip({ name: info.name, code: info.code, score: info.score, rank: info.rank });
+                            if (info) setHovered(info.code);
                           }}
-                          onMouseLeave={() => {
-                            if (!selected) setTooltip(null);
-                          }}
+                          onMouseLeave={() => setHovered(null)}
                           onClick={() => {
-                            if (info) {
-                              const code = Object.entries(ISO2_TO_NUMERIC).find(([, v]) => v === id)?.[0];
-                              if (code) {
-                                selectCountry(code);
-                                setTooltip({ name: info.name, code: info.code, score: info.score, rank: info.rank });
-                              }
-                            }
+                            if (info) setSelected(info.code === selected ? null : info.code);
                           }}
                           style={{
                             default: {
-                              fill: info ? scoreToColor(info.score) : "#1a2235",
-                              stroke: isSelected ? "#f59e0b" : "#0f172a",
+                              fill: isSelected ? "#fbbf24" : (info ? scoreToColor(info.score) : "#1a2235"),
+                              stroke: isSelected ? "#ffffff" : "#0f172a",
                               strokeWidth: isSelected ? 1.5 : 0.5,
                               outline: "none",
                             },
                             hover: {
-                              fill: info ? scoreToColor(info.score + 0.1) : "#263047",
-                              stroke: "#f59e0b",
+                              fill: info ? "#fbbf24" : "#263047",
+                              stroke: "#ffffff",
                               strokeWidth: 1,
                               outline: "none",
                               cursor: info ? "pointer" : "default",
                             },
                             pressed: {
-                              fill: info ? scoreToColor(info.score + 0.15) : "#263047",
+                              fill: "#f59e0b",
                               outline: "none",
                             },
                           }}
@@ -258,42 +199,94 @@ export default function StrengthMap() {
             </ComposableMap>
 
             <div className="absolute bottom-3 left-3 flex flex-col gap-1">
-              <div className="text-xs font-mono text-muted-foreground mb-1 uppercase tracking-wider">Strength Index</div>
+              <div className="text-[10px] font-mono text-muted-foreground mb-1 uppercase tracking-wider">Strength Index</div>
               <div className="flex items-center gap-2">
-                <div className="w-32 h-3 rounded-sm" style={{
+                <div className="w-32 h-2 rounded-sm" style={{
                   background: "linear-gradient(to right, #1e2a3a, #8b2800, #f59e0b)"
                 }} />
-                <div className="flex justify-between w-32 text-[10px] font-mono text-muted-foreground -mt-3">
+                <div className="flex justify-between w-32 text-[8px] font-mono text-muted-foreground -mt-3">
                   <span>Low</span>
                   <span>High</span>
                 </div>
               </div>
             </div>
-
-            {tooltip && !selected && (
-              <div className="absolute top-3 right-3 bg-card/95 border border-border rounded-md px-3 py-2 text-sm font-mono shadow-xl pointer-events-none">
-                <div className="font-bold text-foreground flex items-center gap-2"><FlagIcon code={tooltip.code} size={20} /> {tooltip.name}</div>
-                <div className="text-muted-foreground text-xs mt-0.5">
-                  Rank <span className="text-primary">#{tooltip.rank}</span> · Score{" "}
-                  <span className="text-primary">{(tooltip.score * 100).toFixed(1)}</span>
-                </div>
-                <div className="text-xs text-muted-foreground/70 mt-0.5">{getTier(tooltip.score)}</div>
-              </div>
-            )}
           </Card>
 
-          <div className="flex flex-col gap-4">
-            {/* Detail card — desktop only (xl+), sits above rankings */}
-            {selectedCountry && (
-              <CountryDetailCard
-                country={selectedCountry}
-                onClose={() => selectCountry(null)}
-                className="hidden xl:block"
-              />
-            )}
+          <div className="space-y-4">
+            {/* Target Profile Card */}
+            <Card className={cn(
+              "border-2 transition-all duration-300 min-h-[240px] flex flex-col justify-center",
+              focusedCountry ? "border-primary/40 bg-primary/5 shadow-[0_0_20px_rgba(251,191,36,0.1)]" : "border-border/50 bg-card/30 border-dashed"
+            )}>
+              {focusedCountry ? (
+                <div className="p-4 space-y-4 animate-in fade-in zoom-in-95 duration-300">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <FlagIcon code={focusedCountry.code} size={28} />
+                      <div className="flex flex-col">
+                        <span className="font-bold uppercase tracking-tighter text-sm italic leading-tight">{focusedCountry.name}</span>
+                        <span className="text-[8px] font-mono text-primary uppercase tracking-[0.2em]">Rank: #{focusedCountry.rank}</span>
+                      </div>
+                    </div>
+                    {focusedCountry.isLocked && (
+                      <button 
+                        onClick={() => setSelected(null)}
+                        className="p-1 text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Zap className="w-3 h-3 text-primary" />
+                        <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-[0.2em]">Strength Index</div>
+                      </div>
+                      <div className="text-4xl font-black font-mono text-primary leading-none tabular-nums">
+                        {(focusedCountry.score * 100).toFixed(1)}
+                      </div>
+                    </div>
 
-            <Card className="border-border/50 bg-card/40 p-3 flex-1 overflow-hidden">
-              {/* Rankings header — collapsible on mobile */}
+                    <div className="pt-2 border-t border-border/50">
+                      <div className="flex justify-between items-center mb-1.5">
+                        <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Capabilities Tier</div>
+                        <span className="text-[10px] font-mono font-bold text-primary">
+                          {getTier(focusedCountry.score).split('—')[0]}
+                        </span>
+                      </div>
+                      <div className="h-1.5 w-full bg-muted/20 rounded-none overflow-hidden flex border border-border/50">
+                        <div 
+                          className="h-full bg-primary shadow-[0_0_10px_rgba(251,191,36,0.5)] transition-all duration-500" 
+                          style={{ width: `${Math.min(focusedCountry.score * 200, 100)}%` }} 
+                        />
+                      </div>
+                    </div>
+                    
+                    {!focusedCountry.isLocked && (
+                      <div className="flex items-center gap-2 justify-center py-1 bg-primary/10 border border-primary/20">
+                        <Target className="w-3 h-3 text-primary animate-pulse" />
+                        <span className="text-[8px] font-mono text-primary font-bold uppercase tracking-widest">Click Map to Lock Data</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6 flex flex-col items-center text-center space-y-3 opacity-30">
+                  <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center">
+                    <Target className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-mono uppercase tracking-widest">No Active Target</p>
+                    <p className="text-[8px] font-mono leading-relaxed">Hover or select a region to populate tactical data</p>
+                  </div>
+                </div>
+              )}
+            </Card>
+
+            {/* Map Intelligence Card */}
+            <Card className="border-border/50 bg-card/40 p-3">
               <button
                 className="xl:hidden w-full flex items-center justify-between mb-2"
                 onClick={() => setShowRankings((s) => !s)}
@@ -306,27 +299,18 @@ export default function StrengthMap() {
               </button>
               <div className="hidden xl:block text-xs font-mono text-muted-foreground uppercase tracking-wider mb-3">Global Rankings</div>
 
-              <div className={`space-y-1 overflow-y-auto max-h-[calc(100vh-340px)] ${showRankings ? "block" : "hidden xl:block"}`}>
+              <div className={`space-y-1 overflow-y-auto max-h-[300px] ${showRankings ? "block" : "hidden xl:block"}`}>
                 {scored.map((c) => (
                   <button
                     key={c.code}
-                    onClick={() => selectCountry(c.code)}
+                    onClick={() => setSelected(c.code === selected ? null : c.code)}
                     className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left transition-colors ${
                       selected === c.code ? "bg-primary/20 border border-primary/30" : "hover:bg-accent/50"
                     }`}
                   >
-                    <span className="text-xs font-mono text-muted-foreground w-5 shrink-0">#{c.rank}</span>
+                    <span className="text-[10px] font-mono text-muted-foreground w-5 shrink-0">#{c.rank}</span>
                     <FlagIcon code={c.code} size={20} />
-                    <span className="text-xs font-mono text-foreground flex-1 truncate">{c.name}</span>
-                    <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden shrink-0">
-                      <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${Math.min(c.score * 200, 100)}%`,
-                          background: scoreToColor(c.score),
-                        }}
-                      />
-                    </div>
+                    <span className="text-[10px] font-mono text-foreground flex-1 truncate uppercase">{c.name}</span>
                     <span className="text-[10px] font-mono text-primary w-8 text-right shrink-0">
                       {(c.score * 100).toFixed(0)}
                     </span>
