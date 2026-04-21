@@ -1,30 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Shield, Users, Map, Crosshair, ShieldAlert } from "lucide-react";
+import { Shield, Users, Map, Crosshair, ShieldAlert, History } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Sun, Moon } from "lucide-react";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-
-  const [isLight, setIsLight] = useState(() => {
-    return !document.documentElement.classList.contains("dark");
-  });
-
-  useEffect(() => {
-    if (isLight) {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    } else {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    }
-  }, [isLight]);
 
   const navItems = [
     { href: "/", label: "Head‑to‑Head", icon: Shield },
     { href: "/coalition", label: "Coalition Builder", icon: Users },
     { href: "/map", label: "Strength Map", icon: Map },
+    { href: "/timeline", label: "Historical Trends", icon: History },
   ];
 
   return (
@@ -39,7 +25,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => (
-            <Link              key={item.href}
+            <Link
+              key={item.href}
               to={item.href}
               className={cn(
                 "flex items-center px-3 py-2.5 rounded-md transition-all text-sm font-medium",
